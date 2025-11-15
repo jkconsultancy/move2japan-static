@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Moving to Japan Checklist</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#0EA5E9", // sky-500
+            "background-light": "#F8FAFC", // slate-50
+            "background-dark": "#020617", // slate-950
+          },
+          fontFamily: {
+            display: ["Sora", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.5rem", // 8px
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .strikethrough {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+    .dark .strikethrough {
+      color: #64748b;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="min-h-screen">
+    <!-- Header -->
+    <header class="relative bg-cover bg-center h-[50vh] min-h-[300px] md:h-[400px]" style="background-image: url('https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+      <div class="absolute inset-0 bg-black/50"></div>
+      <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
+        <div class="flex justify-between items-start pt-6">
+          <div class="text-white font-bold text-xl">🇯🇵</div>
+          <a class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="#">Signup</a>
+        </div>
+        <div class="flex flex-col items-center justify-center h-full text-center text-white pb-16">
+          <h1 class="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">Moving to Japan Checklist</h1>
+          <p class="mt-4 max-w-2xl text-lg sm:text-xl text-slate-200">A comprehensive to do guide for moving to Japan from the US</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-8 pb-20">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <!-- Overall Progress -->
+        <div class="mb-6 bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Overall Progress</h2>
+            <span id="overall-progress-percent" class="text-lg font-bold text-primary">0%</span>
+          </div>
+          <p id="overall-progress-text" class="text-sm text-slate-600 dark:text-slate-400 mb-4">Loading...</p>
+          <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+            <div id="overall-progress-bar" class="bg-primary h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Checklist Container -->
+        <div id="checklist-container" class="bg-background-light dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8 space-y-8">
+          <div class="text-center text-slate-600 dark:text-slate-400">Loading checklist...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Cookie management
+    const COOKIE_NAME = 'japan_checklist_data';
+    const COOKIE_EXPIRY_DAYS = 365;
+
+    function setCookie(name, value, days) {
+      const expires = new Date();
+      expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+      // Use SameSite=Lax for better compatibility (works for same-site and most cross-site scenarios)
+      document.cookie = `${name}=${encodeURIComponent(JSON.stringify(value))};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) {
+          try {
+            return JSON.parse(decodeURIComponent(c.substring(nameEQ.length, c.length)));
+          } catch (e) {
+            return null;
+          }
+        }
+      }
+      return null;
+    }
+
+    // Checklist state management
+    let checklistData = null;
+    let completedTasks = new Set();
+    
+    // Default URL for checklist JSON
+    const DEFAULT_CHECKLIST_URL = 'https://gist.githubusercontent.com/jalakoo/44ba89b8f60fc97400c9750112e5ba7c/raw/9cbd1e1f9a0f21386d800e20f9f707cf1bdb5910/move2japan_from_us.json';
+
+    // Load initial checklist from JSON URL
+    async function loadInitialChecklist() {
+      // Get URL from query parameter or use default
+      const urlParams = new URLSearchParams(window.location.search);
+      const checklistUrl = urlParams.get('checklist_url') || DEFAULT_CHECKLIST_URL;
+      
+      try {
+        const response = await fetch(checklistUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error loading checklist from URL:', error);
+        return null;
+      }
+    }
+
+    // Initialize app
+    async function init() {
+      // Check if user has visited before and has saved progress
+      const savedData = getCookie(COOKIE_NAME);
+      
+      // Restore saved progress first (before loading new data)
+      if (savedData && savedData.completedTasks && Array.isArray(savedData.completedTasks)) {
+        completedTasks = new Set(savedData.completedTasks);
+        console.log('Restored', completedTasks.size, 'completed tasks from cookie');
+      } else {
+        completedTasks = new Set();
+      }
+      
+      // Always load the latest checklist from URL (in case it was updated)
+      checklistData = await loadInitialChecklist();
+      
+      if (checklistData) {
+        // Save current state to cookie (with latest checklist data and preserved selections)
+        // This ensures the cookie is updated with the latest checklist structure
+        setCookie(COOKIE_NAME, {
+          checklistData: checklistData,
+          completedTasks: Array.from(completedTasks)
+        }, COOKIE_EXPIRY_DAYS);
+        
+        renderChecklist();
+        updateOverallProgress();
+      } else {
+        // If loading fails, try to use saved data as fallback
+        if (savedData && savedData.checklistData) {
+          checklistData = savedData.checklistData;
+          // Keep the already restored completedTasks
+          renderChecklist();
+          updateOverallProgress();
+        } else {
+          document.getElementById('checklist-container').innerHTML = 
+            '<div class="text-center text-red-600">Failed to load checklist. Please refresh the page.</div>';
+        }
+      }
+    }
+
+    // Count all tasks recursively
+    function countAllTasks(data) {
+      let count = 0;
+      for (const phaseKey in data) {
+        const phase = data[phaseKey];
+        for (const categoryKey in phase) {
+          const category = phase[categoryKey];
+          for (const subSectionKey in category) {
+            const subSection = category[subSectionKey];
+            if (subSection.tasks) {
+              subSection.tasks.forEach(task => {
+                count++;
+                if (task.subtasks) {
+                  count += task.subtasks.length;
+                }
+              });
+            }
+          }
+        }
+      }
+      return count;
+    }
+
+    // Get task ID
+    function getTaskId(phaseKey, categoryKey, subSectionKey, taskIndex, subtaskIndex = null) {
+      if (subtaskIndex !== null) {
+        return `${phaseKey}::${categoryKey}::${subSectionKey}::${taskIndex}::${subtaskIndex}`;
+      }
+      return `${phaseKey}::${categoryKey}::${subSectionKey}::${taskIndex}`;
+    }
+
+    // Check if task is completed
+    function isTaskCompleted(taskId) {
+      return completedTasks.has(taskId);
+    }
+
+    // Toggle task completion
+    function toggleTask(taskId) {
+      if (completedTasks.has(taskId)) {
+        completedTasks.delete(taskId);
+      } else {
+        completedTasks.add(taskId);
+      }
+      saveProgress();
+      updateOverallProgress();
+      updateCategoryProgress();
+    }
+
+    // Save progress to cookie
+    function saveProgress() {
+      if (!checklistData) {
+        console.warn('Cannot save progress: checklistData is not loaded');
+        return;
+      }
+      const tasksArray = Array.from(completedTasks);
+      setCookie(COOKIE_NAME, {
+        checklistData: checklistData,
+        completedTasks: tasksArray
+      }, COOKIE_EXPIRY_DAYS);
+      console.log('Saved', tasksArray.length, 'completed tasks to cookie');
+    }
+
+    // Render checklist
+    function renderChecklist() {
+      const container = document.getElementById('checklist-container');
+      container.innerHTML = '';
+
+      const mainKey = Object.keys(checklistData)[0];
+      const phases = checklistData[mainKey];
+
+      for (const phaseKey in phases) {
+        const phase = phases[phaseKey];
+        const categoryElement = createCategoryElement(phaseKey, phase, mainKey);
+        container.appendChild(categoryElement);
+      }
+    }
+
+    // Create category element (Phase)
+    function createCategoryElement(phaseKey, phase, mainKey) {
+      const categoryDiv = document.createElement('div');
+      categoryDiv.className = 'space-y-4';
+      categoryDiv.dataset.categoryId = phaseKey;
+
+      // Category header
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'flex justify-between items-baseline cursor-pointer';
+      headerDiv.onclick = () => toggleCategory(categoryDiv);
+
+      const titleDiv = document.createElement('div');
+      titleDiv.innerHTML = `<h3 class="text-xl font-bold text-slate-900 dark:text-white">${phaseKey}</h3>`;
+
+      const progressDiv = document.createElement('div');
+      progressDiv.className = 'flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400';
+      progressDiv.innerHTML = `
+        <span class="category-progress-text">0% Complete</span>
+        <span class="material-symbols-outlined text-base category-caret">expand_more</span>
+      `;
+
+      headerDiv.appendChild(titleDiv);
+      headerDiv.appendChild(progressDiv);
+
+      // Progress bar
+      const progressBarDiv = document.createElement('div');
+      progressBarDiv.className = 'w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2';
+      progressBarDiv.innerHTML = '<div class="category-progress-bar bg-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>';
+
+      // Content container (collapsible)
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'category-content space-y-6';
+      contentDiv.style.display = 'block'; // Default to expanded
+
+      // Render sub-sections
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        const subSectionElement = createSubSectionElement(subSectionKey, subSection, mainKey, phaseKey);
+        contentDiv.appendChild(subSectionElement);
+      }
+
+      categoryDiv.appendChild(headerDiv);
+      categoryDiv.appendChild(progressBarDiv);
+      categoryDiv.appendChild(contentDiv);
+
+      // Update category progress after rendering
+      setTimeout(() => updateCategoryProgress(phaseKey), 0);
+
+      return categoryDiv;
+    }
+
+    // Create sub-section element
+    function createSubSectionElement(subSectionKey, subSection, mainKey, phaseKey) {
+      const subSectionDiv = document.createElement('div');
+      subSectionDiv.className = 'space-y-4';
+
+      const subSectionTitle = document.createElement('h4');
+      subSectionTitle.className = 'text-lg font-semibold text-slate-800 dark:text-slate-200';
+      subSectionTitle.textContent = subSectionKey;
+      subSectionDiv.appendChild(subSectionTitle);
+
+      // Tasks container
+      const tasksContainer = document.createElement('div');
+      tasksContainer.className = 'divide-y divide-slate-200 dark:divide-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800';
+
+      if (subSection.tasks) {
+        subSection.tasks.forEach((task, taskIndex) => {
+          // Main task
+          const taskRow = createTaskRow(task, mainKey, phaseKey, subSectionKey, taskIndex);
+          tasksContainer.appendChild(taskRow);
+
+          // Subtasks if any
+          if (task.subtasks) {
+            task.subtasks.forEach((subtask, subtaskIndex) => {
+              const subtaskRow = createTaskRow(subtask, mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex, true);
+              tasksContainer.appendChild(subtaskRow);
+            });
+          }
+        });
+      }
+
+      subSectionDiv.appendChild(tasksContainer);
+      return subSectionDiv;
+    }
+
+    // Create task row
+    function createTaskRow(task, mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex = null, isSubtask = false) {
+      const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+      const isCompleted = isTaskCompleted(taskId);
+      const hasLink = task.links && task.links.length > 0;
+
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-150';
+      
+      const leftDiv = document.createElement('div');
+      leftDiv.className = 'flex items-center space-x-4 flex-1';
+      
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary dark:bg-slate-900 dark:border-slate-600';
+      checkbox.checked = isCompleted;
+      checkbox.onclick = (e) => {
+        e.stopPropagation();
+        toggleTask(taskId);
+        updateTaskRow(row, taskId, task.name);
+      };
+      
+      // Add click handler for opening links (only if task has links)
+      // Clicking anywhere on the row (except the checkbox) should open the link
+      if (hasLink) {
+        row.style.cursor = 'pointer';
+        row.onclick = (e) => {
+          // Only prevent link opening if clicking directly on the checkbox
+          // Allow clicking on label/text and anywhere else to open the link
+          if (e.target.type === 'checkbox' || e.target === checkbox) {
+            return;
+          }
+          // Open the first link in a new tab
+          if (task.links && task.links.length > 0) {
+            window.open(task.links[0], '_blank');
+          }
+        };
+      }
+
+      const label = document.createElement('span');
+      label.className = `text-slate-700 dark:text-slate-300 ${isCompleted ? 'strikethrough' : ''}`;
+      label.textContent = task.name;
+
+      leftDiv.appendChild(checkbox);
+      leftDiv.appendChild(label);
+
+      const rightIcon = document.createElement('span');
+      rightIcon.className = 'material-symbols-outlined text-slate-400 dark:text-slate-500';
+      rightIcon.textContent = hasLink ? 'chevron_right' : '';
+
+      row.appendChild(leftDiv);
+      if (hasLink) {
+        row.appendChild(rightIcon);
+      }
+
+      return row;
+    }
+
+    // Update task row appearance
+    function updateTaskRow(row, taskId, taskName) {
+      const checkbox = row.querySelector('input[type="checkbox"]');
+      const label = row.querySelector('span:not(.material-symbols-outlined)');
+      const isCompleted = isTaskCompleted(taskId);
+
+      checkbox.checked = isCompleted;
+      if (isCompleted) {
+        label.classList.add('strikethrough');
+      } else {
+        label.classList.remove('strikethrough');
+      }
+    }
+
+    // Toggle category expand/collapse
+    function toggleCategory(categoryDiv) {
+      const content = categoryDiv.querySelector('.category-content');
+      const caret = categoryDiv.querySelector('.category-caret');
+      const isExpanded = content.style.display !== 'none';
+
+      if (isExpanded) {
+        content.style.display = 'none';
+        caret.textContent = 'chevron_right';
+        caret.style.transform = 'rotate(0deg)';
+      } else {
+        content.style.display = 'block';
+        caret.textContent = 'expand_more';
+      }
+    }
+
+    // Calculate category progress
+    function calculateCategoryProgress(phaseKey) {
+      const mainKey = Object.keys(checklistData)[0];
+      const phase = checklistData[mainKey][phaseKey];
+      let total = 0;
+      let completed = 0;
+
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        if (subSection.tasks) {
+          subSection.tasks.forEach((task, taskIndex) => {
+            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+            total++;
+            if (isTaskCompleted(taskId)) completed++;
+
+            if (task.subtasks) {
+              task.subtasks.forEach((subtask, subtaskIndex) => {
+                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+                total++;
+                if (isTaskCompleted(subtaskId)) completed++;
+              });
+            }
+          });
+        }
+      }
+
+      return total > 0 ? Math.round((completed / total) * 100) : 0;
+    }
+
+    // Update category progress
+    function updateCategoryProgress(phaseKey = null) {
+      const mainKey = Object.keys(checklistData)[0];
+      const phases = checklistData[mainKey];
+
+      if (phaseKey) {
+        // Update specific category
+        const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
+        if (categoryDiv) {
+          const progress = calculateCategoryProgress(phaseKey);
+          const progressText = categoryDiv.querySelector('.category-progress-text');
+          const progressBar = categoryDiv.querySelector('.category-progress-bar');
+          if (progressText) progressText.textContent = `${progress}% Complete`;
+          if (progressBar) progressBar.style.width = `${progress}%`;
+        }
+      } else {
+        // Update all categories
+        for (const key in phases) {
+          updateCategoryProgress(key);
+        }
+      }
+    }
+
+    // Update overall progress
+    function updateOverallProgress() {
+      const mainKey = Object.keys(checklistData)[0];
+      const phases = checklistData[mainKey];
+      let total = 0;
+      let completed = 0;
+
+      for (const phaseKey in phases) {
+        const phase = phases[phaseKey];
+        for (const subSectionKey in phase) {
+          const subSection = phase[subSectionKey];
+          if (subSection.tasks) {
+            subSection.tasks.forEach((task, taskIndex) => {
+              const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+              total++;
+              if (isTaskCompleted(taskId)) completed++;
+
+              if (task.subtasks) {
+                task.subtasks.forEach((subtask, subtaskIndex) => {
+                  const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+                  total++;
+                  if (isTaskCompleted(subtaskId)) completed++;
+                });
+              }
+            });
+          }
+        }
+      }
+
+      const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+      document.getElementById('overall-progress-percent').textContent = `${percent}%`;
+      document.getElementById('overall-progress-text').textContent = 
+        `You've completed ${completed} out of ${total} tasks. ${completed < total ? 'Keep going!' : 'Congratulations!'}`;
+      document.getElementById('overall-progress-bar').style.width = `${percent}%`;
+    }
+
+    // Initialize on page load
+    init();
+  </script>
+</body>
+</html>
+

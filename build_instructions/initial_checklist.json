@@ -1,0 +1,550 @@
+{
+  "Moving to Japan from the US": {
+    "Phase 1: Initial Planning & Legal Requirements (6-12 months before)": {
+      "Visa and Immigration": {
+        "tasks": [
+          {
+            "name": "Determine the correct visa type (work, spouse, student, highly skilled professional, etc.)",
+            "links": ["https://www.mofa.go.jp/j_info/visit/visa/index.html"]
+          },
+          {
+            "name": "Obtain Certificate of Eligibility (COE) if required",
+            "links": ["https://www.us.emb-japan.go.jp/itpr_en/visa-coe.html"]
+          },
+          {
+            "name": "Gather required documents for visa application",
+            "subtasks": [
+              {
+                "name": "Valid passport (renewed if expires within 6 months)",
+                "links": []
+              },
+              {
+                "name": "COE (Certificate of Eligibility)",
+                "links": []
+              },
+              {
+                "name": "Marriage certificate (if applying for spouse visa)",
+                "links": []
+              },
+              {
+                "name": "Other visa-specific documents",
+                "links": []
+              }
+            ],
+            "links": []
+          },
+          {
+            "name": "Apply for and receive visa at Japanese consulate",
+            "links": []
+          }
+        ]
+      },
+      "Financial Preparation": {
+        "tasks": [
+          {
+            "name": "Open bank account that allows international transfers",
+            "links": []
+          },
+          {
+            "name": "Notify US banks of international move (to avoid fraud alerts)",
+            "links": []
+          },
+          {
+            "name": "Research cost of living in your target city",
+            "links": []
+          },
+          {
+            "name": "Prepare savings with proof of financial stability (required for some visa types)",
+            "links": []
+          },
+          {
+            "name": "Research Japanese banking options",
+            "links": []
+          },
+          {
+            "name": "Understand tax implications for both US and Japan reporting requirements",
+            "links": []
+          },
+          {
+            "name": "Consult with tax professional about foreign income reporting",
+            "links": []
+          },
+          {
+            "name": "Consider opening international/multi-currency bank account",
+            "links": []
+          }
+        ]
+      },
+      "Career and Education": {
+        "tasks": [
+          {
+            "name": "Secure job offer or school acceptance (if applicable)",
+            "links": []
+          },
+          {
+            "name": "Research professional licensing requirements",
+            "links": []
+          },
+          {
+            "name": "Get academic credentials evaluated/translated if needed",
+            "links": []
+          },
+          {
+            "name": "Prepare professional documents in English and Japanese",
+            "links": []
+          }
+        ]
+      }
+    },
+    "Phase 2: Documentation & Preparations (3-6 months before)": {
+      "Essential Documents": {
+        "tasks": [
+          {
+            "name": "Get apostilled copies of important documents",
+            "subtasks": [
+              {
+                "name": "Birth certificate",
+                "links": []
+              },
+              {
+                "name": "Marriage certificate (if applicable)",
+                "links": []
+              },
+              {
+                "name": "Divorce decree (if applicable)",
+                "links": []
+              },
+              {
+                "name": "Educational transcripts and diplomas",
+                "links": []
+              },
+              {
+                "name": "Professional licenses",
+                "links": []
+              }
+            ],
+            "links": []
+          },
+          {
+            "name": "Obtain certified translations of documents into Japanese",
+            "links": []
+          },
+          {
+            "name": "Collect important documents for renting (income proof, guarantor information)",
+            "links": []
+          },
+          {
+            "name": "Get medical records and prescription information",
+            "links": []
+          },
+          {
+            "name": "Secure international driving permit (valid for 1 year in Japan)",
+            "links": []
+          }
+        ]
+      },
+      "Health and Medical": {
+        "tasks": [
+          {
+            "name": "Check vaccination requirements",
+            "links": []
+          },
+          {
+            "name": "Complete required medical examinations",
+            "links": []
+          },
+          {
+            "name": "Get comprehensive health checkup",
+            "links": []
+          },
+          {
+            "name": "Obtain 90-day supply of prescription medications",
+            "links": []
+          },
+          {
+            "name": "Collect detailed medical records and prescriptions",
+            "links": []
+          },
+          {
+            "name": "Buy travel health insurance (until enrolled in Japan's system)",
+            "links": []
+          }
+        ]
+      },
+      "Language and Cultural Preparation": {
+        "tasks": [
+          {
+            "name": "Start learning Japanese language basics and survival phrases",
+            "links": []
+          },
+          {
+            "name": "Learn how daily life works in Japan",
+            "subtasks": [
+              {
+                "name": "Train system navigation",
+                "links": []
+              },
+              {
+                "name": "Shopping customs and etiquette",
+                "links": []
+              },
+              {
+                "name": "Payment methods (cash-heavy society)",
+                "links": []
+              },
+              {
+                "name": "Recycling and garbage separation rules",
+                "links": []
+              }
+            ],
+            "links": []
+          },
+          {
+            "name": "Download translation apps and language tools",
+            "links": []
+          },
+          {
+            "name": "Consider taking formal Japanese classes",
+            "links": []
+          }
+        ]
+      }
+    },
+    "Phase 3: Logistics & Shipping (2-3 months before)": {
+      "Housing Research": {
+        "tasks": [
+          {
+            "name": "Research areas you might live in (consider work location, commute, cost of living)",
+            "links": []
+          },
+          {
+            "name": "Decide if you'll start in temporary housing (hotel, Airbnb, serviced apartment)",
+            "links": []
+          },
+          {
+            "name": "Understand Japanese rental system (key money, deposits, guarantors)",
+            "links": []
+          },
+          {
+            "name": "Contact real estate agents or housing services",
+            "links": []
+          },
+          {
+            "name": "Research guarantor services if needed",
+            "links": []
+          }
+        ]
+      },
+      "Shipping and Moving": {
+        "tasks": [
+          {
+            "name": "Research international moving companies",
+            "links": []
+          },
+          {
+            "name": "Decide what to bring vs. store vs. ship vs. buy new in Japan",
+            "links": []
+          },
+          {
+            "name": "Get quotes for shipping options (sea freight vs. air freight)",
+            "links": []
+          },
+          {
+            "name": "Understand Japanese customs regulations and prohibited items",
+            "links": []
+          },
+          {
+            "name": "Prepare detailed inventory of shipped items",
+            "links": []
+          },
+          {
+            "name": "Consider temporary storage options",
+            "links": []
+          }
+        ]
+      },
+      "Electronics and Appliances": {
+        "tasks": [
+          {
+            "name": "Check voltage compatibility (Japan uses 100V)",
+            "links": []
+          },
+          {
+            "name": "Purchase power adapters and voltage converters/transformers if needed",
+            "links": []
+          },
+          {
+            "name": "Research which electronics to bring vs. buy new",
+            "links": []
+          },
+          {
+            "name": "Unlock cell phone or research Japanese mobile plans",
+            "links": []
+          }
+        ]
+      }
+    },
+    "Phase 4: Final Preparations (1 month before)": {
+      "Personal Affairs in the US": {
+        "tasks": [
+          {
+            "name": "Set up mail forwarding with USPS",
+            "links": []
+          },
+          {
+            "name": "Cancel/transfer subscriptions and services",
+            "links": []
+          },
+          {
+            "name": "Close unnecessary US accounts",
+            "links": []
+          },
+          {
+            "name": "Arrange for someone to handle US affairs if needed",
+            "links": []
+          },
+          {
+            "name": "File absentee ballot request for future elections",
+            "links": []
+          },
+          {
+            "name": "Notify IRS of foreign address change",
+            "links": []
+          }
+        ]
+      },
+      "Travel Arrangements": {
+        "tasks": [
+          {
+            "name": "Book one-way flight to Japan",
+            "links": []
+          },
+          {
+            "name": "Arrange airport transportation in Japan",
+            "links": []
+          },
+          {
+            "name": "Pack essential items in carry-on luggage",
+            "links": []
+          },
+          {
+            "name": "Prepare survival kit for first few days",
+            "links": []
+          }
+        ]
+      },
+      "Final Health and Safety": {
+        "tasks": [
+          {
+            "name": "Get travel insurance",
+            "links": []
+          },
+          {
+            "name": "Register with nearest US embassy/consulate",
+            "links": []
+          },
+          {
+            "name": "Share itinerary and contact info with family/friends",
+            "links": []
+          },
+          {
+            "name": "Prepare emergency contact list",
+            "links": []
+          }
+        ]
+      }
+    },
+    "Phase 5: Upon Arrival in Japan (First 30 days)": {
+      "Airport Arrival": {
+        "tasks": [
+          {
+            "name": "Complete arrival procedures at airport",
+            "links": []
+          },
+          {
+            "name": "Receive Residence Card (在留カード, ざいりゅうカード) at immigration (for most visa types)",
+            "links": []
+          },
+          {
+            "name": "Declare items at customs if shipping household goods",
+            "links": []
+          }
+        ]
+      },
+      "Immediate Legal Requirements (Within 14 days)": {
+        "tasks": [
+          {
+            "name": "Register address at local city/ward office",
+            "links": []
+          },
+          {
+            "name": "Get certificate of residence (住民票)",
+            "links": []
+          },
+          {
+            "name": "Enroll in National Health Insurance (if not covered by employer)",
+            "links": []
+          },
+          {
+            "name": "Join the pension system (mandatory for most residents)",
+            "links": []
+          }
+        ]
+      },
+      "Essential Services Setup": {
+        "tasks": [
+          {
+            "name": "Open Japanese bank account (requires residence card)",
+            "links": []
+          },
+          {
+            "name": "Get Japanese phone number (many carriers require bank account/credit card)",
+            "links": []
+          },
+          {
+            "name": "Apply for MyNumber card (マイナンバーカード) for tax and government services",
+            "links": []
+          },
+          {
+            "name": "Set up utilities (gas, electricity, water, internet)",
+            "links": []
+          },
+          {
+            "name": "Find temporary accommodation if needed",
+            "links": []
+          }
+        ]
+      },
+      "Transportation": {
+        "tasks": [
+          {
+            "name": "Get IC card for public transportation (Suica, Pasmo)",
+            "links": []
+          },
+          {
+            "name": "Explore transportation cards and consider commuter passes",
+            "links": []
+          },
+          {
+            "name": "Learn local transportation routes",
+            "links": []
+          },
+          {
+            "name": "Consider bicycle purchase/rental",
+            "links": []
+          }
+        ]
+      }
+    },
+    "Phase 6: Long-term Settlement (First 6 months)": {
+      "Housing": {
+        "tasks": [
+          {
+            "name": "Find long-term apartment (may require guarantor, company sponsor, or guarantor service)",
+            "links": []
+          },
+          {
+            "name": "Learn garbage separation/recycling rules in your ward",
+            "links": []
+          },
+          {
+            "name": "Convert international driver's license to Japanese license (within 1 year)",
+            "links": []
+          }
+        ]
+      },
+      "Daily Life Integration": {
+        "tasks": [
+          {
+            "name": "Learn to navigate supermarkets, drugstores, and convenience stores",
+            "links": []
+          },
+          {
+            "name": "Sign up for online services (Amazon Japan, Rakuten, etc.)",
+            "links": []
+          },
+          {
+            "name": "Find local doctors, dentists, and other services",
+            "links": []
+          },
+          {
+            "name": "Explore hobbies and recreational activities",
+            "links": []
+          }
+        ]
+      },
+      "Legal and Financial": {
+        "tasks": [
+          {
+            "name": "Understand Japanese taxes (file in Japan and possibly US if still required)",
+            "links": []
+          },
+          {
+            "name": "Consider international money transfer services for US-Japan transfers",
+            "links": []
+          },
+          {
+            "name": "Set up regular financial transfers if needed",
+            "links": []
+          },
+          {
+            "name": "Build Japanese credit history",
+            "links": []
+          },
+          {
+            "name": "Get a hanko?",
+            "links": []
+          }
+        ]
+      },
+      "Community and Integration": {
+        "tasks": [
+          {
+            "name": "Continue Japanese language study",
+            "links": []
+          },
+          {
+            "name": "Join community groups, expat associations, or local classes",
+            "links": []
+          },
+          {
+            "name": "Join local community groups or international societies",
+            "links": []
+          },
+          {
+            "name": "Find language exchange partners",
+            "links": []
+          },
+          {
+            "name": "Build social connections for support and integration",
+            "links": []
+          },
+          {
+            "name": "Network within your industry or field",
+            "links": []
+          }
+        ]
+      },
+      "Future Planning": {
+        "tasks": [
+          {
+            "name": "If staying long-term: research permanent residency requirements",
+            "links": []
+          },
+          {
+            "name": "Keep track of visa renewal deadlines",
+            "links": []
+          },
+          {
+            "name": "Consider estate/retirement planning if staying indefinitely",
+            "links": []
+          },
+          {
+            "name": "Plan visits back to the US",
+            "links": []
+          }
+        ]
+      }
+    }
+  }
+}
