@@ -358,27 +358,69 @@
         toggleTask(taskId);
         updateTaskRow(row, taskId, task.name);
       };
-      
-      // Add click handler for opening links (only if task has links)
-      // Clicking anywhere on the row (except the checkbox) should open the link
-      if (hasLink) {
-        row.style.cursor = 'pointer';
-        row.onclick = (e) => {
-          // Only prevent link opening if clicking directly on the checkbox
-          // Allow clicking on label/text and anywhere else to open the link
-          if (e.target.type === 'checkbox' || e.target === checkbox) {
-            return;
-          }
-          // Open the first link in a new tab
-          if (task.links && task.links.length > 0) {
-            window.open(task.links[0], '_blank');
-          }
-        };
-      }
 
       const label = document.createElement('span');
-      label.className = `text-slate-700 dark:text-slate-300 ${isCompleted ? 'strikethrough' : ''}`;
+      label.className = `text-slate-700 dark:text-slate-300 ${isCompleted ? 'strikethrough' : ''} cursor-text`;
       label.textContent = task.name;
+      label.contentEditable = false;
+      label.setAttribute('data-task-id', taskId); // Store taskId for reference
+      
+      // Make label editable on double-click
+      label.ondblclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!label.contentEditable || label.contentEditable === 'false') {
+          label.contentEditable = true;
+          label.focus();
+          // Select all text for easy editing
+          const range = document.createRange();
+          range.selectNodeContents(label);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      };
+      
+      // Save edited text when user finishes editing
+      label.onblur = () => {
+        if (label.contentEditable === 'true' || label.contentEditable === true) {
+          label.contentEditable = false;
+          const newText = label.textContent.trim();
+          const currentTaskName = subtaskIndex !== null 
+            ? checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].subtasks[subtaskIndex].name
+            : checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].name;
+          
+          if (newText && newText !== currentTaskName) {
+            // Update the task name in the data structure
+            if (subtaskIndex !== null) {
+              checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].subtasks[subtaskIndex].name = newText;
+            } else {
+              checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].name = newText;
+            }
+            saveProgress();
+          } else if (!newText) {
+            // Restore original text if empty
+            label.textContent = currentTaskName;
+          }
+        }
+      };
+      
+      // Prevent Enter key from creating new line, save instead
+      label.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          label.blur();
+        }
+        // Allow Escape to cancel editing
+        if (e.key === 'Escape') {
+          const currentTaskName = subtaskIndex !== null 
+            ? checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].subtasks[subtaskIndex].name
+            : checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].name;
+          label.textContent = currentTaskName;
+          label.contentEditable = false;
+          label.blur();
+        }
+      };
 
       leftDiv.appendChild(checkbox);
       leftDiv.appendChild(label);
@@ -386,6 +428,17 @@
       const rightIcon = document.createElement('span');
       rightIcon.className = 'material-symbols-outlined text-slate-400 dark:text-slate-500';
       rightIcon.textContent = hasLink ? 'chevron_right' : '';
+      
+      // Only the caret icon opens the link
+      if (hasLink) {
+        rightIcon.style.cursor = 'pointer';
+        rightIcon.onclick = (e) => {
+          e.stopPropagation();
+          if (task.links && task.links.length > 0) {
+            window.open(task.links[0], '_blank');
+          }
+        };
+      }
 
       row.appendChild(leftDiv);
       if (hasLink) {
@@ -398,14 +451,16 @@
     // Update task row appearance
     function updateTaskRow(row, taskId, taskName) {
       const checkbox = row.querySelector('input[type="checkbox"]');
-      const label = row.querySelector('span:not(.material-symbols-outlined)');
+      const label = row.querySelector(`span[data-task-id="${taskId}"]`);
       const isCompleted = isTaskCompleted(taskId);
 
-      checkbox.checked = isCompleted;
-      if (isCompleted) {
-        label.classList.add('strikethrough');
-      } else {
-        label.classList.remove('strikethrough');
+      if (checkbox) checkbox.checked = isCompleted;
+      if (label) {
+        if (isCompleted) {
+          label.classList.add('strikethrough');
+        } else {
+          label.classList.remove('strikethrough');
+        }
       }
     }
 
