@@ -106,3 +106,25 @@ No environment variables are needed. The site loads checklist data from a GitHub
 - All assets (CSS, fonts) are loaded from CDNs
 - No build process required - pure static HTML/CSS/JavaScript
 
+## Analytics Setup
+
+### Cloudflare Web Analytics
+
+The site includes Cloudflare Web Analytics for privacy-focused, free analytics.
+
+**To set up:**
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → Web Analytics
+2. Click "Add a site" and enter your domain
+3. Copy your token from the dashboard
+4. Replace `YOUR_CLOUDFLARE_TOKEN_HERE` in `index.html` (line 12) with your actual token
+
+**Benefits:**
+- ✅ Free forever
+- ✅ Privacy-focused (no cookies, GDPR compliant)
+- ✅ Lightweight (~1KB script)
+- ✅ No cookie banner required
+- ✅ Real-time analytics
+
+**Note:** You don't need to use Cloudflare as your CDN/DNS provider to use Web Analytics - it works with any hosting provider.
+
