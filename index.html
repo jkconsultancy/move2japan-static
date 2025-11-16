@@ -133,6 +133,32 @@
     .swipe-content.swiped {
       transform: translateX(-80px);
     }
+    .swipe-content-resource.swiped {
+      transform: translateX(-160px);
+    }
+    .swipe-edit {
+      position: absolute;
+      right: 80px;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background-color: #0EA5E9;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .swipe-content-resource.swiped ~ .swipe-edit {
+      display: flex;
+    }
+    .swipe-edit:hover {
+      background-color: #0284c7;
+    }
+    .swipe-edit .material-symbols-outlined {
+      color: white;
+      font-size: 24px;
+    }
     .swipe-delete {
       position: absolute;
       right: 0;
@@ -146,7 +172,8 @@
       cursor: pointer;
       z-index: 10;
     }
-    .swipe-content.swiped ~ .swipe-delete {
+    .swipe-content.swiped ~ .swipe-delete,
+    .swipe-content-resource.swiped ~ .swipe-delete {
       display: flex;
     }
     .swipe-delete:hover {
@@ -361,6 +388,39 @@
     }
     .dark .editable-title[contenteditable="true"] {
       background-color: #1e293b;
+    }
+    /* Resource card edit icon */
+    .resource-edit-icon {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 32px;
+      height: 32px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 0.375rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      transition: background-color 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .dark .resource-edit-icon {
+      background-color: rgba(30, 41, 59, 0.9);
+    }
+    .resource-edit-icon:hover {
+      background-color: rgba(255, 255, 255, 1);
+    }
+    .dark .resource-edit-icon:hover {
+      background-color: rgba(30, 41, 59, 1);
+    }
+    .resource-edit-icon .material-symbols-outlined {
+      color: #475569;
+      font-size: 18px;
+    }
+    .dark .resource-edit-icon .material-symbols-outlined {
+      color: #cbd5e1;
     }
   </style>
 </head>
@@ -1239,7 +1299,7 @@
     }
 
     // Add swipe handlers for touch and mouse events
-    function addSwipeHandlers(row, swipeContainer) {
+    function addSwipeHandlers(row, swipeContainer, swipeDistance = 80) {
       let startX = 0;
       let currentX = 0;
       let isDragging = false;
@@ -1260,19 +1320,28 @@
         // Only allow swiping left (positive diffX)
         if (diffX > 0) {
           e.preventDefault();
-          const translateX = Math.min(diffX, 80);
+          const translateX = Math.min(diffX, swipeDistance);
           row.style.transform = `translateX(-${translateX}px)`;
-          hasSwiped = translateX > 40; // Threshold for revealing delete button
+          hasSwiped = translateX > (swipeDistance / 2); // Threshold for revealing buttons
         }
       });
 
       row.addEventListener('touchend', () => {
         if (isDragging) {
+          const editButton = swipeContainer.querySelector('.swipe-edit');
+          const deleteButton = swipeContainer.querySelector('.swipe-delete');
           if (hasSwiped) {
             row.classList.add('swiped');
-            row.style.transform = 'translateX(-80px)';
+            row.style.transform = `translateX(-${swipeDistance}px)`;
+            // Show buttons
+            if (editButton) editButton.style.display = 'flex';
+            if (deleteButton) deleteButton.style.display = 'flex';
           } else {
+            row.classList.remove('swiped');
             row.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
           }
           isDragging = false;
         }
@@ -1301,21 +1370,29 @@
         
         // Only allow swiping left (positive diffX)
         if (diffX > 0) {
-          const translateX = Math.min(diffX, 80);
+          const translateX = Math.min(diffX, swipeDistance);
           row.style.transform = `translateX(-${translateX}px)`;
-          hasSwiped = translateX > 40;
+          hasSwiped = translateX > (swipeDistance / 2);
         }
       });
 
       row.addEventListener('mouseup', () => {
         if (isDragging) {
+          const editButton = swipeContainer.querySelector('.swipe-edit');
+          const deleteButton = swipeContainer.querySelector('.swipe-delete');
           row.style.transition = 'transform 0.3s ease-out';
           if (hasSwiped) {
             row.classList.add('swiped');
-            row.style.transform = 'translateX(-80px)';
+            row.style.transform = `translateX(-${swipeDistance}px)`;
+            // Show buttons
+            if (editButton) editButton.style.display = 'flex';
+            if (deleteButton) deleteButton.style.display = 'flex';
           } else {
-            row.style.transform = 'translateX(0)';
             row.classList.remove('swiped');
+            row.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
           }
           isDragging = false;
         }
@@ -1323,13 +1400,21 @@
 
       row.addEventListener('mouseleave', () => {
         if (isDragging) {
+          const editButton = swipeContainer.querySelector('.swipe-edit');
+          const deleteButton = swipeContainer.querySelector('.swipe-delete');
           row.style.transition = 'transform 0.3s ease-out';
           if (hasSwiped) {
             row.classList.add('swiped');
-            row.style.transform = 'translateX(-80px)';
+            row.style.transform = `translateX(-${swipeDistance}px)`;
+            // Show buttons
+            if (editButton) editButton.style.display = 'flex';
+            if (deleteButton) deleteButton.style.display = 'flex';
           } else {
-            row.style.transform = 'translateX(0)';
             row.classList.remove('swiped');
+            row.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
           }
           isDragging = false;
         }
@@ -1616,12 +1701,58 @@
         swipeContainer.className = 'swipe-container';
         
         const card = document.createElement('div');
-        card.className = 'swipe-content bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer';
-        card.onclick = () => {
-          if (linkUrl && !card.classList.contains('swiped')) {
+        card.className = 'swipe-content swipe-content-resource bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer relative';
+        card.onclick = (e) => {
+          // If clicking edit icon, edit button, or delete button, let them handle it
+          if (e.target.closest('.resource-edit-icon') || e.target.closest('.swipe-edit') || e.target.closest('.swipe-delete')) {
+            return;
+          }
+          // If swiped, reset it
+          if (card.classList.contains('swiped')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const editButton = swipeContainer.querySelector('.swipe-edit');
+            const deleteButton = swipeContainer.querySelector('.swipe-delete');
+            card.classList.remove('swiped');
+            card.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
+            return;
+          }
+          // Otherwise, open the link
+          if (linkUrl) {
             window.open(linkUrl, '_blank');
           }
         };
+        
+        // Add edit icon in upper-right corner
+        const editIcon = document.createElement('div');
+        editIcon.className = 'resource-edit-icon';
+        editIcon.innerHTML = '<span class="material-symbols-outlined">more_vert</span>';
+        editIcon.onclick = (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          // Toggle swipe reveal
+          const editButton = swipeContainer.querySelector('.swipe-edit');
+          const deleteButton = swipeContainer.querySelector('.swipe-delete');
+          if (card.classList.contains('swiped')) {
+            // Hide buttons
+            card.classList.remove('swiped');
+            card.style.transform = 'translateX(0)';
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
+          } else {
+            // Show buttons
+            card.classList.add('swiped');
+            card.style.transform = 'translateX(-160px)';
+            if (editButton) editButton.style.display = 'flex';
+            if (deleteButton) deleteButton.style.display = 'flex';
+          }
+        };
+        
+        // Append icon to card (card has position: relative)
+        card.appendChild(editIcon);
 
         // Image section (if image_url exists)
         if (linkImage && linkImage.trim() !== '') {
@@ -1667,6 +1798,18 @@
 
         card.appendChild(contentDiv);
         
+        // Create edit button
+        const editButton = document.createElement('div');
+        editButton.className = 'swipe-edit';
+        editButton.innerHTML = '<span class="material-symbols-outlined">edit</span>';
+        editButton.onclick = (e) => {
+          e.stopPropagation();
+          const resource = typeof link === 'string' 
+            ? { title: linkTitle, link_url: linkUrl, image_url: linkImage, tags: linkTags }
+            : link;
+          showEditResourceDialog(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex, linkIndex, resource, swipeContainer);
+        };
+        
         // Create delete button
         const deleteButton = document.createElement('div');
         deleteButton.className = 'swipe-delete';
@@ -1677,10 +1820,11 @@
         };
         
         swipeContainer.appendChild(card);
+        swipeContainer.appendChild(editButton);
         swipeContainer.appendChild(deleteButton);
         
-        // Add swipe functionality
-        addSwipeHandlers(card, swipeContainer);
+        // Add swipe functionality with 160px distance for resources (to show both edit and delete)
+        addSwipeHandlers(card, swipeContainer, 160);
         
         linksList.appendChild(swipeContainer);
       });
@@ -2132,6 +2276,125 @@
       saveProgress();
     }
 
+    // Show dialog to edit existing resource
+    function showEditResourceDialog(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, resource, swipeContainer) {
+      const overlay = document.createElement('div');
+      overlay.className = 'dialog-overlay';
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+        }
+      };
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'dialog-content';
+      dialog.onclick = (e) => e.stopPropagation();
+      
+      // Get current values
+      const currentTitle = typeof resource === 'string' ? resource : (resource.title || '');
+      const currentUrl = typeof resource === 'string' ? resource : (resource.link_url || '');
+      const currentImage = typeof resource === 'string' ? '' : (resource.image_url || '');
+      const currentTags = typeof resource === 'string' ? [] : (resource.tags || []);
+      const currentTagsStr = Array.isArray(currentTags) ? currentTags.join(', ') : '';
+      
+      dialog.innerHTML = `
+        <div class="dialog-header">
+          <h3 class="dialog-title">Edit Resource</h3>
+          <button class="dialog-close" id="dialog-close-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form id="edit-resource-form">
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="edit-resource-title">Title *</label>
+            <input type="text" id="edit-resource-title" class="dialog-input" required placeholder="Enter resource title" value="${currentTitle.replace(/"/g, '&quot;')}">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="edit-resource-url">URL *</label>
+            <input type="url" id="edit-resource-url" class="dialog-input" required placeholder="https://example.com" value="${currentUrl.replace(/"/g, '&quot;')}">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="edit-resource-image">Image URL (optional)</label>
+            <input type="url" id="edit-resource-image" class="dialog-input" placeholder="https://example.com/image.jpg" value="${currentImage.replace(/"/g, '&quot;')}">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="edit-resource-tags">Tags (comma-separated, optional)</label>
+            <input type="text" id="edit-resource-tags" class="dialog-input" placeholder="blog, video, official" value="${currentTagsStr.replace(/"/g, '&quot;')}">
+          </div>
+          <div class="dialog-actions">
+            <button type="button" class="btn-secondary" id="dialog-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Save Changes</button>
+          </div>
+        </form>
+      `;
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      
+      // Wire up close and cancel buttons
+      const closeBtn = dialog.querySelector('#dialog-close-btn');
+      const cancelBtn = dialog.querySelector('#dialog-cancel-btn');
+      const closeDialog = () => overlay.remove();
+      if (closeBtn) closeBtn.onclick = closeDialog;
+      if (cancelBtn) cancelBtn.onclick = closeDialog;
+      
+      const form = dialog.querySelector('#edit-resource-form');
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const title = dialog.querySelector('#edit-resource-title').value.trim();
+        const url = dialog.querySelector('#edit-resource-url').value.trim();
+        const image = dialog.querySelector('#edit-resource-image').value.trim();
+        const tagsStr = dialog.querySelector('#edit-resource-tags').value.trim();
+        const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t) : [];
+        
+        if (title && url) {
+          try {
+            updateResource(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, title, url, image, tags);
+            overlay.remove();
+            // Refresh the links display
+            const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+            const taskRow = document.querySelector(`[data-task-id="${getTaskId(mainKey, phaseKey, subSectionKey, taskIndex)}"]`)?.closest('.swipe-content');
+            if (taskRow) {
+              showTaskLinks(task.links, task.name, taskRow);
+            }
+          } catch (error) {
+            console.error('Error updating resource:', error);
+            alert('Error updating resource: ' + error.message);
+          }
+        } else {
+          alert('Please enter both title and URL');
+        }
+      };
+      
+      dialog.querySelector('#edit-resource-title').focus();
+    }
+
+    // Update existing resource
+    function updateResource(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, title, url, image, tags) {
+      const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+      if (task.links && task.links[linkIndex]) {
+        // Handle both old format (string) and new format (object)
+        if (typeof task.links[linkIndex] === 'string') {
+          // Convert old format to new format
+          task.links[linkIndex] = {
+            title: title,
+            link_url: url,
+            image_url: image || '',
+            tags: tags || []
+          };
+        } else {
+          // Update existing object
+          task.links[linkIndex].title = title;
+          task.links[linkIndex].link_url = url;
+          task.links[linkIndex].image_url = image || '';
+          task.links[linkIndex].tags = tags || [];
+        }
+        saveProgress();
+      } else {
+        throw new Error('Resource not found');
+      }
+    }
+
     // Wire up Overall Progress swipe and refresh
     function wireUpOverallProgressSwipe() {
       const progressContent = document.getElementById('overall-progress-content');
@@ -2198,12 +2461,17 @@
     if (!swipeCloseHandlerAdded) {
       document.addEventListener('click', (e) => {
         // Find all swiped rows
-        const swipedRows = document.querySelectorAll('.swipe-content.swiped');
+        const swipedRows = document.querySelectorAll('.swipe-content.swiped, .swipe-content-resource.swiped');
         swipedRows.forEach(swipedRow => {
           const swipeContainer = swipedRow.closest('.swipe-container');
           if (swipeContainer && !swipeContainer.contains(e.target)) {
+            const editButton = swipeContainer.querySelector('.swipe-edit');
+            const deleteButton = swipeContainer.querySelector('.swipe-delete');
             swipedRow.classList.remove('swiped');
             swipedRow.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
           }
         });
       }, true);
