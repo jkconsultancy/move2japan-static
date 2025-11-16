@@ -156,6 +156,30 @@
       color: white;
       font-size: 24px;
     }
+    /* Swipe refresh button (for Overall Progress) */
+    .swipe-refresh {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background-color: #0EA5E9;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .swipe-refresh:hover {
+      background-color: #0284c7;
+    }
+    .swipe-refresh .material-symbols-outlined {
+      color: white;
+      font-size: 24px;
+    }
+    .swipe-content.swiped ~ .swipe-refresh {
+      display: flex;
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
@@ -179,14 +203,19 @@
     <main class="pt-8 pb-20">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <!-- Overall Progress -->
-        <div class="mb-6 bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8">
-          <div class="flex justify-between items-center mb-2">
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Overall Progress</h2>
-            <span id="overall-progress-percent" class="text-lg font-bold text-primary">0%</span>
+        <div class="mb-6 swipe-container">
+          <div id="overall-progress-content" class="swipe-content bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8">
+            <div class="flex justify-between items-center mb-2">
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Overall Progress</h2>
+              <span id="overall-progress-percent" class="text-lg font-bold text-primary">0%</span>
+            </div>
+            <p id="overall-progress-text" class="text-sm text-slate-600 dark:text-slate-400 mb-4">Loading...</p>
+            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+              <div id="overall-progress-bar" class="bg-primary h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
           </div>
-          <p id="overall-progress-text" class="text-sm text-slate-600 dark:text-slate-400 mb-4">Loading...</p>
-          <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
-            <div id="overall-progress-bar" class="bg-primary h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+          <div id="overall-progress-refresh" class="swipe-refresh">
+            <span class="material-symbols-outlined">refresh</span>
           </div>
         </div>
 
@@ -281,6 +310,37 @@
       }
     }
 
+    // Reset checklist to original state
+    async function resetChecklist() {
+      // Clear the cookie by setting it to expire in the past
+      const expires = new Date();
+      expires.setTime(expires.getTime() - 1);
+      document.cookie = `${COOKIE_NAME}=;expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+      
+      // Reset completed tasks
+      completedTasks = new Set();
+      
+      // Reload checklist from DEFAULT_CHECKLIST_URL
+      checklistData = await loadInitialChecklist();
+      
+      if (checklistData) {
+        // Save fresh state to cookie
+        setCookie(COOKIE_NAME, {
+          checklistData: checklistData,
+          completedTasks: []
+        }, COOKIE_EXPIRY_DAYS);
+        
+        // Re-render the checklist
+        renderChecklist();
+        updateOverallProgress();
+        
+        console.log('Checklist reset to original state');
+      } else {
+        console.error('Failed to reload checklist');
+        alert('Failed to reload checklist. Please refresh the page.');
+      }
+    }
+
     // Initialize app
     async function init() {
       // Check if user has visited before and has saved progress
@@ -319,6 +379,9 @@
             '<div class="text-center text-red-600">Failed to load checklist. Please refresh the page.</div>';
         }
       }
+      
+      // Wire up Overall Progress swipe and refresh button
+      wireUpOverallProgressSwipe();
     }
 
     // Count all tasks recursively
@@ -525,9 +588,15 @@
       categoryDiv.className = 'space-y-4';
       categoryDiv.dataset.categoryId = phaseKey;
 
+      // Create swipe container for phase header
+      const phaseHeaderSwipeContainer = document.createElement('div');
+      phaseHeaderSwipeContainer.className = 'swipe-container';
+
       // Category header
       const headerDiv = document.createElement('div');
-      headerDiv.className = 'flex justify-between items-center cursor-pointer';
+      headerDiv.className = 'swipe-content flex justify-between items-center cursor-pointer';
+      headerDiv.setAttribute('data-phase-key', phaseKey);
+      headerDiv.setAttribute('data-main-key', mainKey);
       
       // Left side with checkbox and title
       const leftHeaderDiv = document.createElement('div');
@@ -568,6 +637,21 @@
       headerDiv.appendChild(leftHeaderDiv);
       headerDiv.appendChild(progressDiv);
 
+      // Create delete button for phase
+      const phaseDeleteButton = document.createElement('div');
+      phaseDeleteButton.className = 'swipe-delete';
+      phaseDeleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+      phaseDeleteButton.onclick = (e) => {
+        e.stopPropagation();
+        deletePhase(mainKey, phaseKey, categoryDiv);
+      };
+
+      phaseHeaderSwipeContainer.appendChild(headerDiv);
+      phaseHeaderSwipeContainer.appendChild(phaseDeleteButton);
+
+      // Add swipe functionality to phase header
+      addSwipeHandlers(headerDiv, phaseHeaderSwipeContainer);
+
       // Progress bar
       const progressBarDiv = document.createElement('div');
       progressBarDiv.className = 'w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2';
@@ -585,7 +669,7 @@
         contentDiv.appendChild(subSectionElement);
       }
 
-      categoryDiv.appendChild(headerDiv);
+      categoryDiv.appendChild(phaseHeaderSwipeContainer);
       categoryDiv.appendChild(progressBarDiv);
       categoryDiv.appendChild(contentDiv);
 
@@ -603,10 +687,33 @@
       const subSectionDiv = document.createElement('div');
       subSectionDiv.className = 'space-y-4';
 
+      // Create swipe container for sub-section header
+      const subSectionSwipeContainer = document.createElement('div');
+      subSectionSwipeContainer.className = 'swipe-container';
+
       const subSectionTitle = document.createElement('h4');
-      subSectionTitle.className = 'text-lg font-semibold text-slate-800 dark:text-slate-200';
+      subSectionTitle.className = 'swipe-content text-lg font-semibold text-slate-800 dark:text-slate-200 py-2 cursor-pointer';
       subSectionTitle.textContent = subSectionKey;
-      subSectionDiv.appendChild(subSectionTitle);
+      subSectionTitle.setAttribute('data-subsection-key', subSectionKey);
+      subSectionTitle.setAttribute('data-phase-key', phaseKey);
+      subSectionTitle.setAttribute('data-main-key', mainKey);
+
+      // Create delete button for sub-section
+      const subSectionDeleteButton = document.createElement('div');
+      subSectionDeleteButton.className = 'swipe-delete';
+      subSectionDeleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+      subSectionDeleteButton.onclick = (e) => {
+        e.stopPropagation();
+        deleteSubSection(mainKey, phaseKey, subSectionKey, subSectionDiv);
+      };
+
+      subSectionSwipeContainer.appendChild(subSectionTitle);
+      subSectionSwipeContainer.appendChild(subSectionDeleteButton);
+
+      // Add swipe functionality to sub-section header
+      addSwipeHandlers(subSectionTitle, subSectionSwipeContainer);
+
+      subSectionDiv.appendChild(subSectionSwipeContainer);
 
       // Tasks container
       const tasksContainer = document.createElement('div');
@@ -946,6 +1053,96 @@
       }
     }
 
+    // Delete sub-section and all its tasks
+    function deleteSubSection(mainKey, phaseKey, subSectionKey, subSectionDiv) {
+      if (!checklistData || !checklistData[mainKey] || !checklistData[mainKey][phaseKey] || !checklistData[mainKey][phaseKey][subSectionKey]) {
+        console.error('Invalid sub-section data structure');
+        return;
+      }
+
+      const phase = checklistData[mainKey][phaseKey];
+      const subSection = phase[subSectionKey];
+
+      // Delete all task IDs from completedTasks
+      if (subSection.tasks) {
+        subSection.tasks.forEach((task, taskIndex) => {
+          const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+          completedTasks.delete(taskId);
+
+          // Also delete all subtask IDs if they exist
+          if (task.subtasks) {
+            task.subtasks.forEach((_, subtaskIndex) => {
+              const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+              completedTasks.delete(subtaskId);
+            });
+          }
+        });
+      }
+
+      // Delete the sub-section from the data structure
+      delete phase[subSectionKey];
+
+      // Save updated data
+      saveProgress();
+
+      // Remove the sub-section div from DOM
+      subSectionDiv.remove();
+
+      // Update progress
+      updateOverallProgress();
+      updateCategoryProgress(phaseKey);
+
+      // Update phase checkbox state
+      const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
+      if (categoryDiv) {
+        const phaseCheckbox = categoryDiv.querySelector('input[type="checkbox"]');
+        if (phaseCheckbox) {
+          updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
+        }
+      }
+    }
+
+    // Delete phase and all its sub-sections and tasks
+    function deletePhase(mainKey, phaseKey, categoryDiv) {
+      if (!checklistData || !checklistData[mainKey] || !checklistData[mainKey][phaseKey]) {
+        console.error('Invalid phase data structure');
+        return;
+      }
+
+      const phase = checklistData[mainKey][phaseKey];
+
+      // Delete all task IDs from completedTasks for this entire phase
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        if (subSection.tasks) {
+          subSection.tasks.forEach((task, taskIndex) => {
+            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+            completedTasks.delete(taskId);
+
+            // Also delete all subtask IDs if they exist
+            if (task.subtasks) {
+              task.subtasks.forEach((_, subtaskIndex) => {
+                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+                completedTasks.delete(subtaskId);
+              });
+            }
+          });
+        }
+      }
+
+      // Delete the phase from the data structure
+      delete checklistData[mainKey][phaseKey];
+
+      // Save updated data
+      saveProgress();
+
+      // Remove the category div from DOM
+      categoryDiv.remove();
+
+      // Update overall progress
+      updateOverallProgress();
+    }
+
     // Track currently selected task row
     let selectedTaskRow = null;
 
@@ -1242,6 +1439,27 @@
     function handleSignup() {
       console.log('Signup button clicked - opening Google Form');
       window.open('https://forms.gle/zCZ1LTBNgAjFC3zx6', '_blank');
+    }
+
+    // Wire up Overall Progress swipe and refresh
+    function wireUpOverallProgressSwipe() {
+      const progressContent = document.getElementById('overall-progress-content');
+      const progressContainer = progressContent?.closest('.swipe-container');
+      const refreshButton = document.getElementById('overall-progress-refresh');
+      
+      if (!progressContent || !progressContainer || !refreshButton) {
+        console.warn('Overall Progress elements not found');
+        return;
+      }
+      
+      // Wire up refresh button click
+      refreshButton.onclick = (e) => {
+        e.stopPropagation();
+        resetChecklist();
+      };
+      
+      // Add swipe handlers
+      addSwipeHandlers(progressContent, progressContainer);
     }
 
     // Wire up signup button
