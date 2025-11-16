@@ -3,7 +3,64 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Moving to Japan Checklist</title>
+  
+  <!-- SEO Meta Tags -->
+  <title>Moving to Japan Checklist - Complete Guide for US Citizens | Move2Japan</title>
+  <meta name="description" content="A comprehensive, interactive checklist for moving to Japan from the US. Track your progress through visa applications, housing, banking, and all essential tasks for relocating to Japan.">
+  <meta name="keywords" content="moving to Japan, Japan relocation checklist, US to Japan move, Japan visa guide, relocate to Japan, Japan immigration checklist, Japan moving guide, expat Japan">
+  <meta name="author" content="Move2Japan">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://move2japan.com/">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://move2japan.com/">
+  <meta property="og:title" content="Moving to Japan Checklist - Complete Guide for US Citizens">
+  <meta property="og:description" content="A comprehensive, interactive checklist for moving to Japan from the US. Track your progress through visa applications, housing, banking, and all essential tasks.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Beautiful landscape view of Japan with mountains and traditional architecture">
+  <meta property="og:site_name" content="Move2Japan">
+  <meta property="og:locale" content="en_US">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://move2japan.com/">
+  <meta name="twitter:title" content="Moving to Japan Checklist - Complete Guide for US Citizens">
+  <meta name="twitter:description" content="A comprehensive, interactive checklist for moving to Japan from the US. Track your progress through visa applications, housing, banking, and all essential tasks.">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+  <meta name="twitter:image:alt" content="Beautiful landscape view of Japan with mountains and traditional architecture">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Moving to Japan Checklist",
+    "description": "A comprehensive, interactive checklist for moving to Japan from the US. Track your progress through visa applications, housing, banking, and all essential tasks for relocating to Japan.",
+    "url": "https://move2japan.com/",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "Interactive checklist with progress tracking",
+      "Visa and immigration guidance",
+      "Housing and banking resources",
+      "Comprehensive relocation tasks",
+      "Resource links for each task"
+    ]
+  }
+  </script>
+  
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -61,12 +118,316 @@
         max-height: calc(100vh - 8rem);
       }
     }
+    /* Swipe to delete container */
+    .swipe-container {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+    }
+    .swipe-content {
+      position: relative;
+      width: 100%;
+      transition: transform 0.3s ease-out;
+      background-color: inherit;
+    }
+    .swipe-content.swiped {
+      transform: translateX(-80px);
+    }
+    .swipe-content-resource.swiped {
+      transform: translateX(-160px);
+    }
+    .swipe-edit {
+      position: absolute;
+      right: 80px;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background-color: #0EA5E9;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .swipe-content-resource.swiped ~ .swipe-edit {
+      display: flex;
+    }
+    .swipe-edit:hover {
+      background-color: #0284c7;
+    }
+    .swipe-edit .material-symbols-outlined {
+      color: white;
+      font-size: 24px;
+    }
+    .swipe-delete {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background-color: #ef4444;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .swipe-content.swiped ~ .swipe-delete,
+    .swipe-content-resource.swiped ~ .swipe-delete {
+      display: flex;
+    }
+    .swipe-delete:hover {
+      background-color: #dc2626;
+    }
+    .swipe-delete .material-symbols-outlined {
+      color: white;
+      font-size: 24px;
+    }
+    /* Swipe refresh button (for Overall Progress) */
+    .swipe-refresh {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background-color: #0EA5E9;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .swipe-refresh:hover {
+      background-color: #0284c7;
+    }
+    .swipe-refresh .material-symbols-outlined {
+      color: white;
+      font-size: 24px;
+    }
+    .swipe-content.swiped ~ .swipe-refresh {
+      display: flex;
+    }
+    /* Dialog/Modal styles */
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-center;
+      padding: 1rem;
+    }
+    .dialog-content {
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .dark .dialog-content {
+      background-color: #0f172a;
+    }
+    .dialog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .dialog-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .dark .dialog-title {
+      color: white;
+    }
+    .dialog-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #64748b;
+      padding: 0.25rem;
+    }
+    .dialog-close:hover {
+      color: #0f172a;
+    }
+    .dark .dialog-close:hover {
+      color: white;
+    }
+    .dialog-form-group {
+      margin-bottom: 1rem;
+    }
+    .dialog-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .dark .dialog-label {
+      color: #e2e8f0;
+    }
+    .dialog-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      background-color: white;
+      color: #0f172a;
+    }
+    .dark .dialog-input {
+      background-color: #1e293b;
+      border-color: #475569;
+      color: white;
+    }
+    .dialog-textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      min-height: 80px;
+      resize: vertical;
+      background-color: white;
+      color: #0f172a;
+    }
+    .dark .dialog-textarea {
+      background-color: #1e293b;
+      border-color: #475569;
+      color: white;
+    }
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+    .btn-primary {
+      background-color: #0EA5E9;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-primary:hover {
+      background-color: #0284c7;
+    }
+    .btn-secondary {
+      background-color: #e2e8f0;
+      color: #0f172a;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .dark .btn-secondary {
+      background-color: #475569;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background-color: #cbd5e1;
+    }
+    .dark .btn-secondary:hover {
+      background-color: #64748b;
+    }
+    /* Add button styles */
+    .add-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-top: 0.5rem;
+      background-color: #f1f5f9;
+      border: 2px dashed #cbd5e1;
+      border-radius: 0.5rem;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .dark .add-button {
+      background-color: #1e293b;
+      border-color: #475569;
+      color: #94a3b8;
+    }
+    .add-button:hover {
+      background-color: #e2e8f0;
+      border-color: #0EA5E9;
+      color: #0EA5E9;
+    }
+    .dark .add-button:hover {
+      background-color: #334155;
+      border-color: #0EA5E9;
+      color: #0EA5E9;
+    }
+    /* Editable title styles */
+    .editable-title {
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s;
+    }
+    .editable-title:hover {
+      background-color: #f1f5f9;
+    }
+    .dark .editable-title:hover {
+      background-color: #1e293b;
+    }
+    .editable-title[contenteditable="true"] {
+      outline: 2px solid #0EA5E9;
+      outline-offset: 2px;
+      background-color: white;
+    }
+    .dark .editable-title[contenteditable="true"] {
+      background-color: #1e293b;
+    }
+    /* Resource card edit icon */
+    .resource-edit-icon {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 32px;
+      height: 32px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 0.375rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      transition: background-color 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .dark .resource-edit-icon {
+      background-color: rgba(30, 41, 59, 0.9);
+    }
+    .resource-edit-icon:hover {
+      background-color: rgba(255, 255, 255, 1);
+    }
+    .dark .resource-edit-icon:hover {
+      background-color: rgba(30, 41, 59, 1);
+    }
+    .resource-edit-icon .material-symbols-outlined {
+      color: #475569;
+      font-size: 18px;
+    }
+    .dark .resource-edit-icon .material-symbols-outlined {
+      color: #cbd5e1;
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
   <div class="min-h-screen">
     <!-- Header -->
-    <header class="relative bg-cover bg-center h-[50vh] min-h-[300px] md:h-[400px]" style="background-image: url('https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+    <header class="relative bg-cover bg-center h-[50vh] min-h-[300px] md:h-[400px]" style="background-image: url('https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');" role="img" aria-label="Beautiful landscape view of Japan with mountains and traditional architecture">
       <div class="absolute inset-0 bg-black/50"></div>
       <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
         <div class="flex justify-between items-start pt-6">
@@ -84,7 +445,8 @@
     <main class="pt-8 pb-20">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <!-- Overall Progress -->
-        <div class="mb-6 bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8">
+        <div class="mb-6 swipe-container">
+          <div id="overall-progress-content" class="swipe-content bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8">
           <div class="flex justify-between items-center mb-2">
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Overall Progress</h2>
             <span id="overall-progress-percent" class="text-lg font-bold text-primary">0%</span>
@@ -92,6 +454,10 @@
           <p id="overall-progress-text" class="text-sm text-slate-600 dark:text-slate-400 mb-4">Loading...</p>
           <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
             <div id="overall-progress-bar" class="bg-primary h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+          <div id="overall-progress-refresh" class="swipe-refresh">
+            <span class="material-symbols-outlined">refresh</span>
           </div>
         </div>
 
@@ -109,7 +475,7 @@
             <div id="links-container" class="fixed lg:sticky top-0 right-0 h-full lg:h-auto w-full max-w-sm lg:max-w-none bg-white dark:bg-slate-900 rounded-lg lg:rounded-lg shadow-xl lg:shadow-xl p-6 flex flex-col transform translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-50" style="max-height: 100vh;">
               <!-- Drawer header with close button (mobile only) -->
               <div class="flex justify-between items-center mb-4 lg:hidden">
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Resources</h3>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Recommend Resources</h3>
                 <button id="close-drawer-btn" class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                   <span class="material-symbols-outlined">close</span>
                 </button>
@@ -162,6 +528,7 @@
     // Checklist state management
     let checklistData = null;
     let completedTasks = new Set();
+    let swipeCloseHandlerAdded = false;
     
     // Default URL for checklist JSON
     const DEFAULT_CHECKLIST_URL = 'https://gist.githubusercontent.com/jalakoo/44ba89b8f60fc97400c9750112e5ba7c/raw/move2japan_from_us.json';
@@ -182,6 +549,37 @@
       } catch (error) {
         console.error('Error loading checklist from URL:', error);
         return null;
+      }
+    }
+
+    // Reset checklist to original state
+    async function resetChecklist() {
+      // Clear the cookie by setting it to expire in the past
+      const expires = new Date();
+      expires.setTime(expires.getTime() - 1);
+      document.cookie = `${COOKIE_NAME}=;expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+      
+      // Reset completed tasks
+      completedTasks = new Set();
+      
+      // Reload checklist from DEFAULT_CHECKLIST_URL
+      checklistData = await loadInitialChecklist();
+      
+      if (checklistData) {
+        // Save fresh state to cookie
+        setCookie(COOKIE_NAME, {
+          checklistData: checklistData,
+          completedTasks: []
+        }, COOKIE_EXPIRY_DAYS);
+        
+        // Re-render the checklist
+        renderChecklist();
+        updateOverallProgress();
+        
+        console.log('Checklist reset to original state');
+      } else {
+        console.error('Failed to reload checklist');
+        alert('Failed to reload checklist. Please refresh the page.');
       }
     }
 
@@ -223,6 +621,9 @@
             '<div class="text-center text-red-600">Failed to load checklist. Please refresh the page.</div>';
         }
       }
+      
+      // Wire up Overall Progress swipe and refresh button
+      wireUpOverallProgressSwipe();
     }
 
     // Count all tasks recursively
@@ -421,6 +822,13 @@
         container.appendChild(categoryElement);
         isFirstPhase = false;
       }
+      
+      // Add "+ Phase" button at the bottom
+      const addPhaseButton = document.createElement('button');
+      addPhaseButton.className = 'add-button w-full';
+      addPhaseButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Phase</span>';
+      addPhaseButton.onclick = () => addNewPhase(mainKey);
+      container.appendChild(addPhaseButton);
     }
 
     // Create category element (Phase)
@@ -429,9 +837,15 @@
       categoryDiv.className = 'space-y-4';
       categoryDiv.dataset.categoryId = phaseKey;
 
+      // Create swipe container for phase header
+      const phaseHeaderSwipeContainer = document.createElement('div');
+      phaseHeaderSwipeContainer.className = 'swipe-container';
+
       // Category header
       const headerDiv = document.createElement('div');
-      headerDiv.className = 'flex justify-between items-center cursor-pointer';
+      headerDiv.className = 'swipe-content flex justify-between items-center cursor-pointer';
+      headerDiv.setAttribute('data-phase-key', phaseKey);
+      headerDiv.setAttribute('data-main-key', mainKey);
       
       // Left side with checkbox and title
       const leftHeaderDiv = document.createElement('div');
@@ -453,8 +867,81 @@
       };
 
       const titleDiv = document.createElement('div');
-      titleDiv.innerHTML = `<h3 class="text-xl font-bold text-slate-900 dark:text-white">${phaseKey}</h3>`;
+      const titleH3 = document.createElement('h3');
+      titleH3.className = 'text-xl font-bold text-slate-900 dark:text-white editable-title';
+      titleH3.textContent = phaseKey;
+      titleH3.contentEditable = false;
+      titleH3.setAttribute('data-phase-key', phaseKey);
+      titleH3.setAttribute('data-main-key', mainKey);
+      
+      // Make title editable on click
+      titleH3.onclick = (e) => {
+        e.stopPropagation();
+        if (!titleH3.contentEditable || titleH3.contentEditable === 'false') {
+          titleH3.contentEditable = true;
+          titleH3.focus();
+          const range = document.createRange();
+          range.selectNodeContents(titleH3);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      };
+      
+      // Save edited title
+      titleH3.onblur = () => {
+        if (titleH3.contentEditable === 'true' || titleH3.contentEditable === true) {
+          titleH3.contentEditable = false;
+          const newTitle = titleH3.textContent.trim();
+          if (newTitle && newTitle !== phaseKey) {
+            // Rename phase in data structure
+            const mainKey = titleH3.getAttribute('data-main-key');
+            const oldPhaseKey = titleH3.getAttribute('data-phase-key');
+            const phase = checklistData[mainKey][oldPhaseKey];
+            delete checklistData[mainKey][oldPhaseKey];
+            checklistData[mainKey][newTitle] = phase;
+            
+            // Update data attributes
+            titleH3.setAttribute('data-phase-key', newTitle);
+            categoryDiv.dataset.categoryId = newTitle;
+            headerDiv.setAttribute('data-phase-key', newTitle);
+            
+            // Update all task IDs that reference this phase
+            const newCompletedTasks = new Set();
+            completedTasks.forEach(taskId => {
+              const parts = taskId.split('::');
+              if (parts.length >= 2 && parts[1] === oldPhaseKey) {
+                parts[1] = newTitle;
+                newCompletedTasks.add(parts.join('::'));
+              } else {
+                newCompletedTasks.add(taskId);
+              }
+            });
+            completedTasks = newCompletedTasks;
+            
+            saveProgress();
+            updateOverallProgress();
+            updateCategoryProgress(newTitle);
+          } else if (!newTitle) {
+            titleH3.textContent = phaseKey;
+          }
+        }
+      };
+      
+      // Prevent Enter key from creating new line, save instead
+      titleH3.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          titleH3.blur();
+        }
+        if (e.key === 'Escape') {
+          titleH3.textContent = phaseKey;
+          titleH3.contentEditable = false;
+          titleH3.blur();
+        }
+      };
 
+      titleDiv.appendChild(titleH3);
       leftHeaderDiv.appendChild(phaseCheckbox);
       leftHeaderDiv.appendChild(titleDiv);
 
@@ -471,6 +958,21 @@
 
       headerDiv.appendChild(leftHeaderDiv);
       headerDiv.appendChild(progressDiv);
+
+      // Create delete button for phase
+      const phaseDeleteButton = document.createElement('div');
+      phaseDeleteButton.className = 'swipe-delete';
+      phaseDeleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+      phaseDeleteButton.onclick = (e) => {
+        e.stopPropagation();
+        deletePhase(mainKey, phaseKey, categoryDiv);
+      };
+
+      phaseHeaderSwipeContainer.appendChild(headerDiv);
+      phaseHeaderSwipeContainer.appendChild(phaseDeleteButton);
+
+      // Add swipe functionality to phase header
+      addSwipeHandlers(headerDiv, phaseHeaderSwipeContainer);
 
       // Progress bar
       const progressBarDiv = document.createElement('div');
@@ -489,7 +991,14 @@
         contentDiv.appendChild(subSectionElement);
       }
 
-      categoryDiv.appendChild(headerDiv);
+      // Add "+ Category" button as last item in phase
+      const addCategoryButton = document.createElement('button');
+      addCategoryButton.className = 'add-button w-full';
+      addCategoryButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Category</span>';
+      addCategoryButton.onclick = () => addNewCategory(mainKey, phaseKey, contentDiv);
+      contentDiv.appendChild(addCategoryButton);
+
+      categoryDiv.appendChild(phaseHeaderSwipeContainer);
       categoryDiv.appendChild(progressBarDiv);
       categoryDiv.appendChild(contentDiv);
 
@@ -507,10 +1016,100 @@
       const subSectionDiv = document.createElement('div');
       subSectionDiv.className = 'space-y-4';
 
+      // Create swipe container for sub-section header
+      const subSectionSwipeContainer = document.createElement('div');
+      subSectionSwipeContainer.className = 'swipe-container';
+
       const subSectionTitle = document.createElement('h4');
-      subSectionTitle.className = 'text-lg font-semibold text-slate-800 dark:text-slate-200';
+      subSectionTitle.className = 'swipe-content text-lg font-semibold text-slate-800 dark:text-slate-200 py-2 cursor-pointer editable-title';
       subSectionTitle.textContent = subSectionKey;
-      subSectionDiv.appendChild(subSectionTitle);
+      subSectionTitle.contentEditable = false;
+      subSectionTitle.setAttribute('data-subsection-key', subSectionKey);
+      subSectionTitle.setAttribute('data-phase-key', phaseKey);
+      subSectionTitle.setAttribute('data-main-key', mainKey);
+      
+      // Make title editable on click
+      subSectionTitle.onclick = (e) => {
+        e.stopPropagation();
+        if (!subSectionTitle.classList.contains('swiped') && (!subSectionTitle.contentEditable || subSectionTitle.contentEditable === 'false')) {
+          subSectionTitle.contentEditable = true;
+          subSectionTitle.focus();
+          const range = document.createRange();
+          range.selectNodeContents(subSectionTitle);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      };
+      
+      // Save edited title
+      subSectionTitle.onblur = () => {
+        if (subSectionTitle.contentEditable === 'true' || subSectionTitle.contentEditable === true) {
+          subSectionTitle.contentEditable = false;
+          const newTitle = subSectionTitle.textContent.trim();
+          if (newTitle && newTitle !== subSectionKey) {
+            // Rename sub-section in data structure
+            const mainKey = subSectionTitle.getAttribute('data-main-key');
+            const phaseKey = subSectionTitle.getAttribute('data-phase-key');
+            const oldSubSectionKey = subSectionTitle.getAttribute('data-subsection-key');
+            const subSection = checklistData[mainKey][phaseKey][oldSubSectionKey];
+            delete checklistData[mainKey][phaseKey][oldSubSectionKey];
+            checklistData[mainKey][phaseKey][newTitle] = subSection;
+            
+            // Update data attributes
+            subSectionTitle.setAttribute('data-subsection-key', newTitle);
+            
+            // Update all task IDs that reference this sub-section
+            const newCompletedTasks = new Set();
+            completedTasks.forEach(taskId => {
+              const parts = taskId.split('::');
+              if (parts.length >= 3 && parts[1] === phaseKey && parts[2] === oldSubSectionKey) {
+                parts[2] = newTitle;
+                newCompletedTasks.add(parts.join('::'));
+              } else {
+                newCompletedTasks.add(taskId);
+              }
+            });
+            completedTasks = newCompletedTasks;
+            
+            saveProgress();
+            updateOverallProgress();
+            updateCategoryProgress(phaseKey);
+          } else if (!newTitle) {
+            subSectionTitle.textContent = subSectionKey;
+          }
+        }
+      };
+      
+      // Prevent Enter key from creating new line, save instead
+      subSectionTitle.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          subSectionTitle.blur();
+        }
+        if (e.key === 'Escape') {
+          subSectionTitle.textContent = subSectionKey;
+          subSectionTitle.contentEditable = false;
+          subSectionTitle.blur();
+        }
+      };
+
+      // Create delete button for sub-section
+      const subSectionDeleteButton = document.createElement('div');
+      subSectionDeleteButton.className = 'swipe-delete';
+      subSectionDeleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+      subSectionDeleteButton.onclick = (e) => {
+        e.stopPropagation();
+        deleteSubSection(mainKey, phaseKey, subSectionKey, subSectionDiv);
+      };
+
+      subSectionSwipeContainer.appendChild(subSectionTitle);
+      subSectionSwipeContainer.appendChild(subSectionDeleteButton);
+
+      // Add swipe functionality to sub-section header
+      addSwipeHandlers(subSectionTitle, subSectionSwipeContainer);
+
+      subSectionDiv.appendChild(subSectionSwipeContainer);
 
       // Tasks container
       const tasksContainer = document.createElement('div');
@@ -531,6 +1130,13 @@
           }
         });
       }
+      
+      // Add "+ Task" button as last item in tasks container
+      const addTaskButton = document.createElement('button');
+      addTaskButton.className = 'add-button w-full';
+      addTaskButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Task</span>';
+      addTaskButton.onclick = () => showAddTaskDialog(mainKey, phaseKey, subSectionKey, tasksContainer, subSectionDiv);
+      tasksContainer.appendChild(addTaskButton);
 
       subSectionDiv.appendChild(tasksContainer);
       return subSectionDiv;
@@ -542,14 +1148,27 @@
       const isCompleted = isTaskCompleted(taskId);
       const hasLinks = task.links && task.links.length > 0;
 
+      // Create swipe container
+      const swipeContainer = document.createElement('div');
+      swipeContainer.className = 'swipe-container';
+
+      // Create swipe content (the actual row)
       const row = document.createElement('div');
-      row.className = `flex items-center justify-between p-4 transition-colors duration-150 ${hasLinks ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer' : ''}`;
+      row.className = `swipe-content flex items-center justify-between p-4 transition-colors duration-150 ${hasLinks ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer' : ''}`;
+      row.setAttribute('data-task-id', taskId);
+      row.setAttribute('data-main-key', mainKey);
+      row.setAttribute('data-phase-key', phaseKey);
+      row.setAttribute('data-subsection-key', subSectionKey);
+      row.setAttribute('data-task-index', taskIndex);
+      if (subtaskIndex !== null) {
+        row.setAttribute('data-subtask-index', subtaskIndex);
+      }
       
       // Make entire row clickable (except checkbox) to show links
       if (hasLinks) {
         row.onclick = (e) => {
-          // Don't trigger if clicking checkbox or label (for editing)
-          if (e.target.type === 'checkbox' || e.target.contentEditable === 'true') {
+          // Don't trigger if clicking checkbox, label (for editing), or if swiped
+          if (e.target.type === 'checkbox' || e.target.contentEditable === 'true' || row.classList.contains('swiped')) {
             return;
           }
           showTaskLinks(task.links, task.name, row);
@@ -645,7 +1264,22 @@
         row.appendChild(rightIcon);
       }
 
-      return row;
+      // Create delete button
+      const deleteButton = document.createElement('div');
+      deleteButton.className = 'swipe-delete';
+      deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+      deleteButton.onclick = (e) => {
+        e.stopPropagation();
+        deleteTask(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex, swipeContainer);
+      };
+
+      swipeContainer.appendChild(row);
+      swipeContainer.appendChild(deleteButton);
+
+      // Add swipe functionality
+      addSwipeHandlers(row, swipeContainer);
+
+      return swipeContainer;
     }
 
     // Update task row appearance
@@ -664,8 +1298,283 @@
       }
     }
 
+    // Add swipe handlers for touch and mouse events
+    function addSwipeHandlers(row, swipeContainer, swipeDistance = 80) {
+      let startX = 0;
+      let currentX = 0;
+      let isDragging = false;
+      let hasSwiped = false;
+
+      // Touch events
+      row.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+        hasSwiped = false;
+      });
+
+      row.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentX = e.touches[0].clientX;
+        const diffX = startX - currentX;
+        
+        // Only allow swiping left (positive diffX)
+        if (diffX > 0) {
+          e.preventDefault();
+          const translateX = Math.min(diffX, swipeDistance);
+          row.style.transform = `translateX(-${translateX}px)`;
+          hasSwiped = translateX > (swipeDistance / 2); // Threshold for revealing buttons
+        }
+      });
+
+      row.addEventListener('touchend', () => {
+        if (isDragging) {
+          const editButton = swipeContainer.querySelector('.swipe-edit');
+          const deleteButton = swipeContainer.querySelector('.swipe-delete');
+          if (hasSwiped) {
+            row.classList.add('swiped');
+            row.style.transform = `translateX(-${swipeDistance}px)`;
+            // Show buttons
+            if (editButton) editButton.style.display = 'flex';
+            if (deleteButton) deleteButton.style.display = 'flex';
+          } else {
+            row.classList.remove('swiped');
+            row.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
+          }
+          isDragging = false;
+        }
+      });
+
+      // Mouse events (for desktop)
+      row.addEventListener('mousedown', (e) => {
+        // Only allow swipe on right side of row or if already swiped
+        const rect = row.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const rowWidth = rect.width;
+        
+        // Allow swipe if clicking on right 30% of row or if already swiped
+        if (clickX > rowWidth * 0.7 || row.classList.contains('swiped')) {
+          startX = e.clientX;
+          isDragging = true;
+          hasSwiped = row.classList.contains('swiped');
+          row.style.transition = 'none';
+        }
+      });
+
+      row.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        currentX = e.clientX;
+        const diffX = startX - currentX;
+        
+        // Only allow swiping left (positive diffX)
+        if (diffX > 0) {
+          const translateX = Math.min(diffX, swipeDistance);
+          row.style.transform = `translateX(-${translateX}px)`;
+          hasSwiped = translateX > (swipeDistance / 2);
+        }
+      });
+
+      row.addEventListener('mouseup', () => {
+        if (isDragging) {
+          const editButton = swipeContainer.querySelector('.swipe-edit');
+          const deleteButton = swipeContainer.querySelector('.swipe-delete');
+          row.style.transition = 'transform 0.3s ease-out';
+          if (hasSwiped) {
+            row.classList.add('swiped');
+            row.style.transform = `translateX(-${swipeDistance}px)`;
+            // Show buttons
+            if (editButton) editButton.style.display = 'flex';
+            if (deleteButton) deleteButton.style.display = 'flex';
+          } else {
+            row.classList.remove('swiped');
+            row.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
+          }
+          isDragging = false;
+        }
+      });
+
+      row.addEventListener('mouseleave', () => {
+        if (isDragging) {
+          const editButton = swipeContainer.querySelector('.swipe-edit');
+          const deleteButton = swipeContainer.querySelector('.swipe-delete');
+          row.style.transition = 'transform 0.3s ease-out';
+          if (hasSwiped) {
+            row.classList.add('swiped');
+            row.style.transform = `translateX(-${swipeDistance}px)`;
+            // Show buttons
+            if (editButton) editButton.style.display = 'flex';
+            if (deleteButton) deleteButton.style.display = 'flex';
+          } else {
+            row.classList.remove('swiped');
+            row.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
+          }
+          isDragging = false;
+        }
+      });
+
+    }
+
+    // Delete task from checklist
+    function deleteTask(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex, swipeContainer) {
+      if (!checklistData || !checklistData[mainKey] || !checklistData[mainKey][phaseKey] || !checklistData[mainKey][phaseKey][subSectionKey]) {
+        console.error('Invalid task data structure');
+        return;
+      }
+
+      const subSection = checklistData[mainKey][phaseKey][subSectionKey];
+      
+      if (subtaskIndex !== null) {
+        // Delete a subtask
+        if (subSection.tasks && subSection.tasks[taskIndex] && subSection.tasks[taskIndex].subtasks) {
+          const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+          completedTasks.delete(subtaskId);
+          subSection.tasks[taskIndex].subtasks.splice(subtaskIndex, 1);
+          
+          // If no subtasks left, remove the subtasks array
+          if (subSection.tasks[taskIndex].subtasks.length === 0) {
+            delete subSection.tasks[taskIndex].subtasks;
+          }
+        }
+      } else {
+        // Delete a main task
+        if (subSection.tasks) {
+          const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+          completedTasks.delete(taskId);
+          
+          // Also delete all subtask IDs if they exist
+          if (subSection.tasks[taskIndex] && subSection.tasks[taskIndex].subtasks) {
+            subSection.tasks[taskIndex].subtasks.forEach((_, subtaskIdx) => {
+              const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIdx);
+              completedTasks.delete(subtaskId);
+            });
+          }
+          
+          subSection.tasks.splice(taskIndex, 1);
+        }
+      }
+
+      // Save updated data
+      saveProgress();
+      
+      // Remove the swipe container from DOM
+      swipeContainer.remove();
+      
+      // Update progress
+      updateOverallProgress();
+      updateCategoryProgress(phaseKey);
+      
+      // Update phase checkbox state
+      const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
+      if (categoryDiv) {
+        const phaseCheckbox = categoryDiv.querySelector('input[type="checkbox"]');
+        if (phaseCheckbox) {
+          updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
+        }
+      }
+    }
+
+    // Delete sub-section and all its tasks
+    function deleteSubSection(mainKey, phaseKey, subSectionKey, subSectionDiv) {
+      if (!checklistData || !checklistData[mainKey] || !checklistData[mainKey][phaseKey] || !checklistData[mainKey][phaseKey][subSectionKey]) {
+        console.error('Invalid sub-section data structure');
+        return;
+      }
+
+      const phase = checklistData[mainKey][phaseKey];
+      const subSection = phase[subSectionKey];
+
+      // Delete all task IDs from completedTasks
+      if (subSection.tasks) {
+        subSection.tasks.forEach((task, taskIndex) => {
+          const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+          completedTasks.delete(taskId);
+
+          // Also delete all subtask IDs if they exist
+          if (task.subtasks) {
+            task.subtasks.forEach((_, subtaskIndex) => {
+              const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+              completedTasks.delete(subtaskId);
+            });
+          }
+        });
+      }
+
+      // Delete the sub-section from the data structure
+      delete phase[subSectionKey];
+
+      // Save updated data
+      saveProgress();
+
+      // Remove the sub-section div from DOM
+      subSectionDiv.remove();
+
+      // Update progress
+      updateOverallProgress();
+      updateCategoryProgress(phaseKey);
+
+      // Update phase checkbox state
+      const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
+      if (categoryDiv) {
+        const phaseCheckbox = categoryDiv.querySelector('input[type="checkbox"]');
+        if (phaseCheckbox) {
+          updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
+        }
+      }
+    }
+
+    // Delete phase and all its sub-sections and tasks
+    function deletePhase(mainKey, phaseKey, categoryDiv) {
+      if (!checklistData || !checklistData[mainKey] || !checklistData[mainKey][phaseKey]) {
+        console.error('Invalid phase data structure');
+        return;
+      }
+
+      const phase = checklistData[mainKey][phaseKey];
+
+      // Delete all task IDs from completedTasks for this entire phase
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        if (subSection.tasks) {
+          subSection.tasks.forEach((task, taskIndex) => {
+            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+            completedTasks.delete(taskId);
+
+            // Also delete all subtask IDs if they exist
+            if (task.subtasks) {
+              task.subtasks.forEach((_, subtaskIndex) => {
+                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+                completedTasks.delete(subtaskId);
+              });
+            }
+          });
+        }
+      }
+
+      // Delete the phase from the data structure
+      delete checklistData[mainKey][phaseKey];
+
+      // Save updated data
+      saveProgress();
+
+      // Remove the category div from DOM
+      categoryDiv.remove();
+
+      // Update overall progress
+      updateOverallProgress();
+    }
+
     // Track currently selected task row
     let selectedTaskRow = null;
+    // Track current task info for adding resources
+    let currentTaskInfo = null;
 
     // Get tag color classes based on tag type
     function getTagColorClasses(tag) {
@@ -727,6 +1636,17 @@
       const linksContainer = document.getElementById('links-container');
       const drawerOverlay = document.getElementById('drawer-overlay');
       
+      // Extract task info from taskRow if available
+      if (taskRow) {
+        const mainKey = taskRow.getAttribute('data-main-key');
+        const phaseKey = taskRow.getAttribute('data-phase-key');
+        const subSectionKey = taskRow.getAttribute('data-subsection-key');
+        const taskIndex = parseInt(taskRow.getAttribute('data-task-index'));
+        currentTaskInfo = { mainKey, phaseKey, subSectionKey, taskIndex };
+      } else {
+        currentTaskInfo = null;
+      }
+      
       // Remove highlight from previously selected row
       if (selectedTaskRow) {
         selectedTaskRow.classList.remove('bg-primary/10', 'border-primary/20', 'border-l-4');
@@ -746,31 +1666,93 @@
         selectedTaskRow = null;
       }
       
+      // Clear existing links
+      linksList.innerHTML = '';
+
       if (!links || links.length === 0) {
         linksList.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">No resources available for this task</p>';
+        // Add "+ Resource" button if we have task info
+        if (currentTaskInfo) {
+          const addResourceButton = document.createElement('button');
+          addResourceButton.className = 'add-button w-full mt-4';
+          addResourceButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>+ Resource</span>';
+          addResourceButton.onclick = () => {
+            if (currentTaskInfo) {
+              showAddResourceDialog(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex);
+            }
+          };
+          linksList.appendChild(addResourceButton);
+        }
         // Open drawer on mobile even if no links
         openDrawer();
         return;
       }
 
-      // Clear existing links
-      linksList.innerHTML = '';
-
-      // Create cards for each link
-      links.forEach(link => {
+      // Create cards for each link with swipe-to-delete
+      links.forEach((link, linkIndex) => {
         // Handle both new format (object with link_url) and old format (string)
         const linkUrl = typeof link === 'string' ? link : (link.link_url || '');
         const linkTitle = typeof link === 'string' ? link : (link.title || 'Untitled Resource');
         const linkImage = typeof link === 'string' ? '' : (link.image_url || '');
         const linkTags = typeof link === 'string' ? [] : (link.tags || []);
         
+        // Create swipe container
+        const swipeContainer = document.createElement('div');
+        swipeContainer.className = 'swipe-container';
+        
         const card = document.createElement('div');
-        card.className = 'bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer';
-        card.onclick = () => {
+        card.className = 'swipe-content swipe-content-resource bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer relative';
+        card.onclick = (e) => {
+          // If clicking edit icon, edit button, or delete button, let them handle it
+          if (e.target.closest('.resource-edit-icon') || e.target.closest('.swipe-edit') || e.target.closest('.swipe-delete')) {
+            return;
+          }
+          // If swiped, reset it
+          if (card.classList.contains('swiped')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const editButton = swipeContainer.querySelector('.swipe-edit');
+            const deleteButton = swipeContainer.querySelector('.swipe-delete');
+            card.classList.remove('swiped');
+            card.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
+            return;
+          }
+          // Otherwise, open the link
           if (linkUrl) {
             window.open(linkUrl, '_blank');
           }
         };
+        
+        // Add edit icon in upper-right corner
+        const editIcon = document.createElement('div');
+        editIcon.className = 'resource-edit-icon';
+        editIcon.innerHTML = '<span class="material-symbols-outlined">more_vert</span>';
+        editIcon.onclick = (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          // Toggle swipe reveal
+          const editButton = swipeContainer.querySelector('.swipe-edit');
+          const deleteButton = swipeContainer.querySelector('.swipe-delete');
+          if (card.classList.contains('swiped')) {
+            // Hide buttons
+            card.classList.remove('swiped');
+            card.style.transform = 'translateX(0)';
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
+          } else {
+            // Show buttons
+            card.classList.add('swiped');
+            card.style.transform = 'translateX(-160px)';
+            if (editButton) editButton.style.display = 'flex';
+            if (deleteButton) deleteButton.style.display = 'flex';
+          }
+        };
+        
+        // Append icon to card (card has position: relative)
+        card.appendChild(editIcon);
 
         // Image section (if image_url exists)
         if (linkImage && linkImage.trim() !== '') {
@@ -815,11 +1797,69 @@
         }
 
         card.appendChild(contentDiv);
-        linksList.appendChild(card);
+        
+        // Create edit button
+        const editButton = document.createElement('div');
+        editButton.className = 'swipe-edit';
+        editButton.innerHTML = '<span class="material-symbols-outlined">edit</span>';
+        editButton.onclick = (e) => {
+          e.stopPropagation();
+          const resource = typeof link === 'string' 
+            ? { title: linkTitle, link_url: linkUrl, image_url: linkImage, tags: linkTags }
+            : link;
+          showEditResourceDialog(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex, linkIndex, resource, swipeContainer);
+        };
+        
+        // Create delete button
+        const deleteButton = document.createElement('div');
+        deleteButton.className = 'swipe-delete';
+        deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+        deleteButton.onclick = (e) => {
+          e.stopPropagation();
+          deleteResource(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex, linkIndex, swipeContainer);
+        };
+        
+        swipeContainer.appendChild(card);
+        swipeContainer.appendChild(editButton);
+        swipeContainer.appendChild(deleteButton);
+        
+        // Add swipe functionality with 160px distance for resources (to show both edit and delete)
+        addSwipeHandlers(card, swipeContainer, 160);
+        
+        linksList.appendChild(swipeContainer);
       });
+      
+      // Add "+ Resource" button at the bottom
+      if (currentTaskInfo) {
+        const addResourceButton = document.createElement('button');
+        addResourceButton.className = 'add-button w-full mt-4';
+        addResourceButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Resource</span>';
+        addResourceButton.onclick = () => {
+          if (currentTaskInfo) {
+            showAddResourceDialog(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex);
+          }
+        };
+        linksList.appendChild(addResourceButton);
+      }
       
       // Open drawer on mobile
       openDrawer();
+    }
+    
+    // Delete resource from task
+    function deleteResource(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, swipeContainer) {
+      const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+      if (task.links && task.links[linkIndex]) {
+        task.links.splice(linkIndex, 1);
+        saveProgress();
+        swipeContainer.remove();
+        
+        // Refresh the links display
+        const taskRow = document.querySelector(`[data-task-id="${getTaskId(mainKey, phaseKey, subSectionKey, taskIndex)}"]`)?.closest('.swipe-content');
+        if (taskRow) {
+          showTaskLinks(task.links, task.name, taskRow);
+        }
+      }
     }
 
     // Drawer functions for mobile
@@ -962,6 +2002,420 @@
       window.open('https://forms.gle/zCZ1LTBNgAjFC3zx6', '_blank');
     }
 
+    // Add new phase
+    function addNewPhase(mainKey) {
+      const newPhaseKey = `New Phase ${Object.keys(checklistData[mainKey]).length + 1}`;
+      checklistData[mainKey][newPhaseKey] = {};
+      saveProgress();
+      renderChecklist();
+    }
+
+    // Add new category/sub-section
+    function addNewCategory(mainKey, phaseKey, contentDiv) {
+      const phase = checklistData[mainKey][phaseKey];
+      const categoryCount = Object.keys(phase).length;
+      const newCategoryKey = `New Category ${categoryCount + 1}`;
+      phase[newCategoryKey] = { tasks: [] };
+      saveProgress();
+      
+      // Re-render just this phase's content
+      const categoryDiv = contentDiv.closest('[data-category-id]');
+      const oldContent = categoryDiv.querySelector('.category-content');
+      const newContent = document.createElement('div');
+      newContent.className = 'category-content space-y-6';
+      newContent.style.display = oldContent.style.display;
+      
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        const subSectionElement = createSubSectionElement(subSectionKey, subSection, mainKey, phaseKey);
+        newContent.appendChild(subSectionElement);
+      }
+      
+      // Add "+ Category" button
+      const addCategoryButton = document.createElement('button');
+      addCategoryButton.className = 'add-button w-full';
+      addCategoryButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Category</span>';
+      addCategoryButton.onclick = () => addNewCategory(mainKey, phaseKey, newContent);
+      newContent.appendChild(addCategoryButton);
+      
+      oldContent.replaceWith(newContent);
+      updateCategoryProgress(phaseKey);
+    }
+
+    // Show dialog to add new task
+    function showAddTaskDialog(mainKey, phaseKey, subSectionKey, tasksContainer, subSectionDiv) {
+      const overlay = document.createElement('div');
+      overlay.className = 'dialog-overlay';
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+        }
+      };
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'dialog-content';
+      dialog.onclick = (e) => e.stopPropagation();
+      
+      dialog.innerHTML = `
+        <div class="dialog-header">
+          <h3 class="dialog-title">Add New Task</h3>
+          <button class="dialog-close" id="dialog-close-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form id="add-task-form">
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="task-name">Task Name *</label>
+            <input type="text" id="task-name" class="dialog-input" required placeholder="Enter task name">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="task-description">Description (optional)</label>
+            <textarea id="task-description" class="dialog-textarea" placeholder="Enter task description"></textarea>
+          </div>
+          <div class="dialog-actions">
+            <button type="button" class="btn-secondary" id="dialog-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Add Task</button>
+          </div>
+        </form>
+      `;
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      
+      // Wire up close and cancel buttons
+      const closeBtn = dialog.querySelector('#dialog-close-btn');
+      const cancelBtn = dialog.querySelector('#dialog-cancel-btn');
+      const closeDialog = () => overlay.remove();
+      if (closeBtn) closeBtn.onclick = closeDialog;
+      if (cancelBtn) cancelBtn.onclick = closeDialog;
+      
+      const form = dialog.querySelector('#add-task-form');
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const taskName = dialog.querySelector('#task-name').value.trim();
+        const taskDescription = dialog.querySelector('#task-description').value.trim();
+        
+        if (taskName) {
+          try {
+            addNewTask(mainKey, phaseKey, subSectionKey, taskName, taskDescription, tasksContainer, subSectionDiv);
+            overlay.remove();
+          } catch (error) {
+            console.error('Error adding task:', error);
+            alert('Error adding task: ' + error.message);
+          }
+        } else {
+          alert('Please enter a task name');
+        }
+      };
+      
+      dialog.querySelector('#task-name').focus();
+    }
+
+    // Add new task
+    function addNewTask(mainKey, phaseKey, subSectionKey, taskName, taskDescription, tasksContainer, subSectionDiv) {
+      // Validate inputs
+      if (!checklistData || !checklistData[mainKey]) {
+        console.error('Invalid mainKey:', mainKey);
+        throw new Error('Invalid checklist data structure');
+      }
+      
+      // Ensure phase exists
+      if (!checklistData[mainKey][phaseKey]) {
+        console.log('Creating missing phase:', phaseKey);
+        checklistData[mainKey][phaseKey] = {};
+      }
+      
+      // Ensure sub-section exists
+      if (!checklistData[mainKey][phaseKey][subSectionKey]) {
+        console.log('Creating missing sub-section:', subSectionKey);
+        checklistData[mainKey][phaseKey][subSectionKey] = { tasks: [] };
+      }
+      
+      const subSection = checklistData[mainKey][phaseKey][subSectionKey];
+      if (!subSection) {
+        console.error('Sub-section is null:', subSectionKey);
+        throw new Error('Sub-section does not exist');
+      }
+      
+      if (!subSection.tasks) {
+        subSection.tasks = [];
+      }
+      
+      const newTask = {
+        name: taskName,
+        description: taskDescription || '',
+        links: []
+      };
+      
+      subSection.tasks.push(newTask);
+      const taskIndex = subSection.tasks.length - 1;
+      
+      // Remove the "+ Task" button temporarily
+      const addButton = tasksContainer.querySelector('.add-button');
+      if (addButton) {
+        addButton.remove();
+      }
+      
+      // Add the new task row
+      const taskRow = createTaskRow(newTask, mainKey, phaseKey, subSectionKey, taskIndex);
+      tasksContainer.appendChild(taskRow);
+      
+      // Re-add the "+ Task" button
+      const newAddButton = document.createElement('button');
+      newAddButton.className = 'add-button w-full';
+      newAddButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Task</span>';
+      newAddButton.onclick = () => showAddTaskDialog(mainKey, phaseKey, subSectionKey, tasksContainer, subSectionDiv);
+      tasksContainer.appendChild(newAddButton);
+      
+      saveProgress();
+      updateOverallProgress();
+      updateCategoryProgress(phaseKey);
+    }
+
+    // Show dialog to add new resource
+    function showAddResourceDialog(mainKey, phaseKey, subSectionKey, taskIndex) {
+      const overlay = document.createElement('div');
+      overlay.className = 'dialog-overlay';
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+        }
+      };
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'dialog-content';
+      dialog.onclick = (e) => e.stopPropagation();
+      
+      dialog.innerHTML = `
+        <div class="dialog-header">
+          <h3 class="dialog-title">Add New Resource</h3>
+          <button class="dialog-close" id="dialog-close-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form id="add-resource-form">
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="resource-title">Title *</label>
+            <input type="text" id="resource-title" class="dialog-input" required placeholder="Enter resource title">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="resource-url">URL *</label>
+            <input type="url" id="resource-url" class="dialog-input" required placeholder="https://example.com">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="resource-image">Image URL (optional)</label>
+            <input type="url" id="resource-image" class="dialog-input" placeholder="https://example.com/image.jpg">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="resource-tags">Tags (comma-separated, optional)</label>
+            <input type="text" id="resource-tags" class="dialog-input" placeholder="blog, video, official">
+          </div>
+          <div class="dialog-actions">
+            <button type="button" class="btn-secondary" id="dialog-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Add Resource</button>
+          </div>
+        </form>
+      `;
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      
+      // Wire up close and cancel buttons
+      const closeBtn = dialog.querySelector('#dialog-close-btn');
+      const cancelBtn = dialog.querySelector('#dialog-cancel-btn');
+      const closeDialog = () => overlay.remove();
+      if (closeBtn) closeBtn.onclick = closeDialog;
+      if (cancelBtn) cancelBtn.onclick = closeDialog;
+      
+      const form = dialog.querySelector('#add-resource-form');
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const title = dialog.querySelector('#resource-title').value.trim();
+        const url = dialog.querySelector('#resource-url').value.trim();
+        const image = dialog.querySelector('#resource-image').value.trim();
+        const tagsStr = dialog.querySelector('#resource-tags').value.trim();
+        const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t) : [];
+        
+        if (title && url) {
+          try {
+            addNewResource(mainKey, phaseKey, subSectionKey, taskIndex, title, url, image, tags);
+            overlay.remove();
+            // Refresh the links display
+            const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+            const taskRow = document.querySelector(`[data-task-id="${getTaskId(mainKey, phaseKey, subSectionKey, taskIndex)}"]`)?.closest('.swipe-content');
+            if (taskRow) {
+              showTaskLinks(task.links, task.name, taskRow);
+            }
+          } catch (error) {
+            console.error('Error adding resource:', error);
+            alert('Error adding resource: ' + error.message);
+          }
+        } else {
+          alert('Please enter both title and URL');
+        }
+      };
+      
+      dialog.querySelector('#resource-title').focus();
+    }
+
+    // Add new resource to task
+    function addNewResource(mainKey, phaseKey, subSectionKey, taskIndex, title, url, image, tags) {
+      const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+      if (!task.links) {
+        task.links = [];
+      }
+      
+      const newResource = {
+        title: title,
+        link_url: url,
+        image_url: image || '',
+        tags: tags || []
+      };
+      
+      task.links.push(newResource);
+      saveProgress();
+    }
+
+    // Show dialog to edit existing resource
+    function showEditResourceDialog(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, resource, swipeContainer) {
+      const overlay = document.createElement('div');
+      overlay.className = 'dialog-overlay';
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+        }
+      };
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'dialog-content';
+      dialog.onclick = (e) => e.stopPropagation();
+      
+      // Get current values
+      const currentTitle = typeof resource === 'string' ? resource : (resource.title || '');
+      const currentUrl = typeof resource === 'string' ? resource : (resource.link_url || '');
+      const currentImage = typeof resource === 'string' ? '' : (resource.image_url || '');
+      const currentTags = typeof resource === 'string' ? [] : (resource.tags || []);
+      const currentTagsStr = Array.isArray(currentTags) ? currentTags.join(', ') : '';
+      
+      dialog.innerHTML = `
+        <div class="dialog-header">
+          <h3 class="dialog-title">Edit Resource</h3>
+          <button class="dialog-close" id="dialog-close-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form id="edit-resource-form">
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="edit-resource-title">Title *</label>
+            <input type="text" id="edit-resource-title" class="dialog-input" required placeholder="Enter resource title" value="${currentTitle.replace(/"/g, '&quot;')}">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="edit-resource-url">URL *</label>
+            <input type="url" id="edit-resource-url" class="dialog-input" required placeholder="https://example.com" value="${currentUrl.replace(/"/g, '&quot;')}">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="edit-resource-image">Image URL (optional)</label>
+            <input type="url" id="edit-resource-image" class="dialog-input" placeholder="https://example.com/image.jpg" value="${currentImage.replace(/"/g, '&quot;')}">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="edit-resource-tags">Tags (comma-separated, optional)</label>
+            <input type="text" id="edit-resource-tags" class="dialog-input" placeholder="blog, video, official" value="${currentTagsStr.replace(/"/g, '&quot;')}">
+          </div>
+          <div class="dialog-actions">
+            <button type="button" class="btn-secondary" id="dialog-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Save Changes</button>
+          </div>
+        </form>
+      `;
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      
+      // Wire up close and cancel buttons
+      const closeBtn = dialog.querySelector('#dialog-close-btn');
+      const cancelBtn = dialog.querySelector('#dialog-cancel-btn');
+      const closeDialog = () => overlay.remove();
+      if (closeBtn) closeBtn.onclick = closeDialog;
+      if (cancelBtn) cancelBtn.onclick = closeDialog;
+      
+      const form = dialog.querySelector('#edit-resource-form');
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const title = dialog.querySelector('#edit-resource-title').value.trim();
+        const url = dialog.querySelector('#edit-resource-url').value.trim();
+        const image = dialog.querySelector('#edit-resource-image').value.trim();
+        const tagsStr = dialog.querySelector('#edit-resource-tags').value.trim();
+        const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t) : [];
+        
+        if (title && url) {
+          try {
+            updateResource(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, title, url, image, tags);
+            overlay.remove();
+            // Refresh the links display
+            const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+            const taskRow = document.querySelector(`[data-task-id="${getTaskId(mainKey, phaseKey, subSectionKey, taskIndex)}"]`)?.closest('.swipe-content');
+            if (taskRow) {
+              showTaskLinks(task.links, task.name, taskRow);
+            }
+          } catch (error) {
+            console.error('Error updating resource:', error);
+            alert('Error updating resource: ' + error.message);
+          }
+        } else {
+          alert('Please enter both title and URL');
+        }
+      };
+      
+      dialog.querySelector('#edit-resource-title').focus();
+    }
+
+    // Update existing resource
+    function updateResource(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, title, url, image, tags) {
+      const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+      if (task.links && task.links[linkIndex]) {
+        // Handle both old format (string) and new format (object)
+        if (typeof task.links[linkIndex] === 'string') {
+          // Convert old format to new format
+          task.links[linkIndex] = {
+            title: title,
+            link_url: url,
+            image_url: image || '',
+            tags: tags || []
+          };
+        } else {
+          // Update existing object
+          task.links[linkIndex].title = title;
+          task.links[linkIndex].link_url = url;
+          task.links[linkIndex].image_url = image || '';
+          task.links[linkIndex].tags = tags || [];
+        }
+        saveProgress();
+      } else {
+        throw new Error('Resource not found');
+      }
+    }
+
+    // Wire up Overall Progress swipe and refresh
+    function wireUpOverallProgressSwipe() {
+      const progressContent = document.getElementById('overall-progress-content');
+      const progressContainer = progressContent?.closest('.swipe-container');
+      const refreshButton = document.getElementById('overall-progress-refresh');
+      
+      if (!progressContent || !progressContainer || !refreshButton) {
+        console.warn('Overall Progress elements not found');
+        return;
+      }
+      
+      // Wire up refresh button click
+      refreshButton.onclick = (e) => {
+        e.stopPropagation();
+        resetChecklist();
+      };
+      
+      // Add swipe handlers
+      addSwipeHandlers(progressContent, progressContainer);
+    }
+
     // Wire up signup button
     function wireUpSignupButton() {
       // Find signup button by text content or by being in header
@@ -1001,6 +2455,27 @@
           closeDrawer();
         }
       });
+    }
+    
+    // Global handler to close swiped rows when clicking outside (only add once)
+    if (!swipeCloseHandlerAdded) {
+      document.addEventListener('click', (e) => {
+        // Find all swiped rows
+        const swipedRows = document.querySelectorAll('.swipe-content.swiped, .swipe-content-resource.swiped');
+        swipedRows.forEach(swipedRow => {
+          const swipeContainer = swipedRow.closest('.swipe-container');
+          if (swipeContainer && !swipeContainer.contains(e.target)) {
+            const editButton = swipeContainer.querySelector('.swipe-edit');
+            const deleteButton = swipeContainer.querySelector('.swipe-delete');
+            swipedRow.classList.remove('swiped');
+            swipedRow.style.transform = 'translateX(0)';
+            // Hide buttons
+            if (editButton) editButton.style.display = 'none';
+            if (deleteButton) deleteButton.style.display = 'none';
+          }
+        });
+      }, true);
+      swipeCloseHandlerAdded = true;
     }
     
     // Initialize on page load
