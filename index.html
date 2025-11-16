@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <script src="https://t.contentsquare.net/uxa/5947da0fdab10.js"></script>
   <script>
     tailwind.config = {
       darkMode: "class",
@@ -38,6 +39,26 @@
     .dark .strikethrough {
       color: #64748b;
     }
+    /* Indeterminate checkbox styling */
+    input[type="checkbox"]:indeterminate {
+      background-color: #0EA5E9;
+      border-color: #0EA5E9;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/%3E%3C/svg%3E");
+    }
+    /* Line clamp utility */
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    /* Links container max-height for desktop */
+    @media (min-width: 1024px) {
+      #links-container {
+        max-height: calc(100vh - 8rem);
+      }
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
@@ -48,7 +69,7 @@
       <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
         <div class="flex justify-between items-start pt-6">
           <div class="text-white font-bold text-xl">🇯🇵</div>
-          <a class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="#">Signup</a>
+          <a class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="javascript:void(0)" onclick="handleSignup()">Signup</a>
         </div>
         <div class="flex flex-col items-center justify-center h-full text-center text-white pb-16">
           <h1 class="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">Moving to Japan Checklist</h1>
@@ -59,7 +80,7 @@
 
     <!-- Main Content -->
     <main class="pt-8 pb-20">
-      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <!-- Overall Progress -->
         <div class="mb-6 bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8">
           <div class="flex justify-between items-center mb-2">
@@ -72,9 +93,36 @@
           </div>
         </div>
 
-        <!-- Checklist Container -->
-        <div id="checklist-container" class="bg-background-light dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8 space-y-8">
-          <div class="text-center text-slate-600 dark:text-slate-400">Loading checklist...</div>
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Checklist Container (Left Column - 2/3 width) -->
+          <div class="lg:col-span-2">
+            <div id="checklist-container" class="bg-background-light dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8 space-y-8">
+              <div class="text-center text-slate-600 dark:text-slate-400">Loading checklist...</div>
+            </div>
+          </div>
+
+          <!-- Links Column (Right Column - 1/3 width, Drawer on mobile) -->
+          <div class="lg:col-span-1">
+            <div id="links-container" class="fixed lg:sticky top-0 right-0 h-full lg:h-auto w-full max-w-sm lg:max-w-none bg-white dark:bg-slate-900 rounded-lg lg:rounded-lg shadow-xl lg:shadow-xl p-6 flex flex-col transform translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-50" style="max-height: 100vh;">
+              <!-- Drawer header with close button (mobile only) -->
+              <div class="flex justify-between items-center mb-4 lg:hidden">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Resources</h3>
+                <button id="close-drawer-btn" class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              <!-- Desktop header -->
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex-shrink-0 hidden lg:block">Resources</h3>
+              <div id="links-list" class="space-y-4 overflow-y-auto flex-1">
+                <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">
+                  Click on a checklist item to view related resources
+                </p>
+              </div>
+            </div>
+            <!-- Drawer overlay (mobile only) -->
+            <div id="drawer-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden"></div>
+          </div>
         </div>
       </div>
     </main>
@@ -114,7 +162,7 @@
     let completedTasks = new Set();
     
     // Default URL for checklist JSON
-    const DEFAULT_CHECKLIST_URL = 'https://gist.githubusercontent.com/jalakoo/44ba89b8f60fc97400c9750112e5ba7c/raw/9cbd1e1f9a0f21386d800e20f9f707cf1bdb5910/move2japan_from_us.json';
+    const DEFAULT_CHECKLIST_URL = 'https://gist.githubusercontent.com/jalakoo/44ba89b8f60fc97400c9750112e5ba7c/raw/move2japan_from_us.json';
 
     // Load initial checklist from JSON URL
     async function loadInitialChecklist() {
@@ -221,6 +269,125 @@
       saveProgress();
       updateOverallProgress();
       updateCategoryProgress();
+      
+      // Update phase checkbox state if task belongs to a phase
+      const parts = taskId.split('::');
+      if (parts.length >= 2) {
+        const phaseKey = parts[1];
+        const mainKey = parts[0];
+        const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
+        if (categoryDiv) {
+          const phaseCheckbox = categoryDiv.querySelector('input[type="checkbox"]');
+          if (phaseCheckbox) {
+            updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
+          }
+        }
+      }
+    }
+
+    // Toggle all tasks in a phase
+    function togglePhaseTasks(phaseKey, mainKey, checked) {
+      const phase = checklistData[mainKey][phaseKey];
+      const taskIds = [];
+
+      // Collect all task IDs in this phase
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        if (subSection.tasks) {
+          subSection.tasks.forEach((task, taskIndex) => {
+            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+            taskIds.push(taskId);
+
+            // Also collect subtasks
+            if (task.subtasks) {
+              task.subtasks.forEach((subtask, subtaskIndex) => {
+                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+                taskIds.push(subtaskId);
+              });
+            }
+          });
+        }
+      }
+
+      // Toggle all tasks
+      if (checked) {
+        taskIds.forEach(taskId => completedTasks.add(taskId));
+      } else {
+        taskIds.forEach(taskId => completedTasks.delete(taskId));
+      }
+
+      // Update UI for all affected task rows
+      taskIds.forEach(taskId => {
+        const parts = taskId.split('::');
+        if (parts.length >= 4) {
+          const row = document.querySelector(`span[data-task-id="${taskId}"]`)?.closest('.flex.items-center');
+          if (row) {
+            const checkbox = row.querySelector('input[type="checkbox"]');
+            const label = row.querySelector(`span[data-task-id="${taskId}"]`);
+            if (checkbox) {
+              checkbox.checked = checked;
+              if (label) {
+                if (checked) {
+                  label.classList.add('strikethrough');
+                } else {
+                  label.classList.remove('strikethrough');
+                }
+              }
+            }
+          }
+        }
+      });
+
+      saveProgress();
+      updateOverallProgress();
+      updateCategoryProgress(phaseKey);
+    }
+
+    // Update phase checkbox state based on task completion
+    function updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox) {
+      const phase = checklistData[mainKey][phaseKey];
+      let totalTasks = 0;
+      let completedCount = 0;
+
+      // Count all tasks in this phase
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        if (subSection.tasks) {
+          subSection.tasks.forEach((task, taskIndex) => {
+            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+            totalTasks++;
+            if (isTaskCompleted(taskId)) {
+              completedCount++;
+            }
+
+            // Also count subtasks
+            if (task.subtasks) {
+              task.subtasks.forEach((subtask, subtaskIndex) => {
+                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+                totalTasks++;
+                if (isTaskCompleted(subtaskId)) {
+                  completedCount++;
+                }
+              });
+            }
+          });
+        }
+      }
+
+      // Set checkbox state: checked if all tasks are completed, indeterminate if some are completed
+      if (totalTasks === 0) {
+        phaseCheckbox.checked = false;
+        phaseCheckbox.indeterminate = false;
+      } else if (completedCount === totalTasks) {
+        phaseCheckbox.checked = true;
+        phaseCheckbox.indeterminate = false;
+      } else if (completedCount > 0) {
+        phaseCheckbox.checked = false;
+        phaseCheckbox.indeterminate = true;
+      } else {
+        phaseCheckbox.checked = false;
+        phaseCheckbox.indeterminate = false;
+      }
     }
 
     // Save progress to cookie
@@ -244,36 +411,63 @@
 
       const mainKey = Object.keys(checklistData)[0];
       const phases = checklistData[mainKey];
+      let isFirstPhase = true;
 
       for (const phaseKey in phases) {
         const phase = phases[phaseKey];
-        const categoryElement = createCategoryElement(phaseKey, phase, mainKey);
+        const categoryElement = createCategoryElement(phaseKey, phase, mainKey, isFirstPhase);
         container.appendChild(categoryElement);
+        isFirstPhase = false;
       }
     }
 
     // Create category element (Phase)
-    function createCategoryElement(phaseKey, phase, mainKey) {
+    function createCategoryElement(phaseKey, phase, mainKey, isFirstPhase = true) {
       const categoryDiv = document.createElement('div');
       categoryDiv.className = 'space-y-4';
       categoryDiv.dataset.categoryId = phaseKey;
 
       // Category header
       const headerDiv = document.createElement('div');
-      headerDiv.className = 'flex justify-between items-baseline cursor-pointer';
-      headerDiv.onclick = () => toggleCategory(categoryDiv);
+      headerDiv.className = 'flex justify-between items-center cursor-pointer';
+      
+      // Left side with checkbox and title
+      const leftHeaderDiv = document.createElement('div');
+      leftHeaderDiv.className = 'flex items-center space-x-3 flex-1';
+      leftHeaderDiv.onclick = (e) => {
+        // Don't toggle category if clicking on checkbox
+        if (e.target.type !== 'checkbox' && e.target !== leftHeaderDiv.querySelector('input[type="checkbox"]')) {
+          toggleCategory(categoryDiv);
+        }
+      };
+
+      // Phase checkbox
+      const phaseCheckbox = document.createElement('input');
+      phaseCheckbox.type = 'checkbox';
+      phaseCheckbox.className = 'h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary dark:bg-slate-900 dark:border-slate-600';
+      phaseCheckbox.onclick = (e) => {
+        e.stopPropagation();
+        togglePhaseTasks(phaseKey, mainKey, phaseCheckbox.checked);
+      };
 
       const titleDiv = document.createElement('div');
       titleDiv.innerHTML = `<h3 class="text-xl font-bold text-slate-900 dark:text-white">${phaseKey}</h3>`;
+
+      leftHeaderDiv.appendChild(phaseCheckbox);
+      leftHeaderDiv.appendChild(titleDiv);
 
       const progressDiv = document.createElement('div');
       progressDiv.className = 'flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400';
       progressDiv.innerHTML = `
         <span class="category-progress-text">0% Complete</span>
-        <span class="material-symbols-outlined text-base category-caret">expand_more</span>
+        <span class="material-symbols-outlined text-base category-caret">${isFirstPhase ? 'expand_more' : 'chevron_right'}</span>
       `;
+      progressDiv.onclick = (e) => {
+        e.stopPropagation();
+        toggleCategory(categoryDiv);
+      };
 
-      headerDiv.appendChild(titleDiv);
+      headerDiv.appendChild(leftHeaderDiv);
       headerDiv.appendChild(progressDiv);
 
       // Progress bar
@@ -284,7 +478,7 @@
       // Content container (collapsible)
       const contentDiv = document.createElement('div');
       contentDiv.className = 'category-content space-y-6';
-      contentDiv.style.display = 'block'; // Default to expanded
+      contentDiv.style.display = isFirstPhase ? 'block' : 'none'; // First phase expanded, others collapsed
 
       // Render sub-sections
       for (const subSectionKey in phase) {
@@ -297,8 +491,11 @@
       categoryDiv.appendChild(progressBarDiv);
       categoryDiv.appendChild(contentDiv);
 
-      // Update category progress after rendering
-      setTimeout(() => updateCategoryProgress(phaseKey), 0);
+      // Update category progress and checkbox state after rendering
+      setTimeout(() => {
+        updateCategoryProgress(phaseKey);
+        updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
+      }, 0);
 
       return categoryDiv;
     }
@@ -341,10 +538,21 @@
     function createTaskRow(task, mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex = null, isSubtask = false) {
       const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
       const isCompleted = isTaskCompleted(taskId);
-      const hasLink = task.links && task.links.length > 0;
+      const hasLinks = task.links && task.links.length > 0;
 
       const row = document.createElement('div');
-      row.className = 'flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-150';
+      row.className = `flex items-center justify-between p-4 transition-colors duration-150 ${hasLinks ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer' : ''}`;
+      
+      // Make entire row clickable (except checkbox) to show links
+      if (hasLinks) {
+        row.onclick = (e) => {
+          // Don't trigger if clicking checkbox or label (for editing)
+          if (e.target.type === 'checkbox' || e.target.contentEditable === 'true') {
+            return;
+          }
+          showTaskLinks(task.links, task.name, row);
+        };
+      }
       
       const leftDiv = document.createElement('div');
       leftDiv.className = 'flex items-center space-x-4 flex-1';
@@ -358,37 +566,80 @@
         toggleTask(taskId);
         updateTaskRow(row, taskId, task.name);
       };
-      
-      // Add click handler for opening links (only if task has links)
-      // Clicking anywhere on the row (except the checkbox) should open the link
-      if (hasLink) {
-        row.style.cursor = 'pointer';
-        row.onclick = (e) => {
-          // Only prevent link opening if clicking directly on the checkbox
-          // Allow clicking on label/text and anywhere else to open the link
-          if (e.target.type === 'checkbox' || e.target === checkbox) {
-            return;
-          }
-          // Open the first link in a new tab
-          if (task.links && task.links.length > 0) {
-            window.open(task.links[0], '_blank');
-          }
-        };
-      }
 
       const label = document.createElement('span');
-      label.className = `text-slate-700 dark:text-slate-300 ${isCompleted ? 'strikethrough' : ''}`;
+      label.className = `text-slate-700 dark:text-slate-300 ${isCompleted ? 'strikethrough' : ''} ${hasLinks ? 'cursor-pointer' : 'cursor-text'}`;
       label.textContent = task.name;
+      label.contentEditable = false;
+      label.setAttribute('data-task-id', taskId); // Store taskId for reference
+      
+      // Make label editable on double-click
+      label.ondblclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!label.contentEditable || label.contentEditable === 'false') {
+          label.contentEditable = true;
+          label.focus();
+          // Select all text for easy editing
+          const range = document.createRange();
+          range.selectNodeContents(label);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      };
+      
+      // Save edited text when user finishes editing
+      label.onblur = () => {
+        if (label.contentEditable === 'true' || label.contentEditable === true) {
+          label.contentEditable = false;
+          const newText = label.textContent.trim();
+          const currentTaskName = subtaskIndex !== null 
+            ? checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].subtasks[subtaskIndex].name
+            : checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].name;
+          
+          if (newText && newText !== currentTaskName) {
+            // Update the task name in the data structure
+            if (subtaskIndex !== null) {
+              checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].subtasks[subtaskIndex].name = newText;
+            } else {
+              checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].name = newText;
+            }
+            saveProgress();
+          } else if (!newText) {
+            // Restore original text if empty
+            label.textContent = currentTaskName;
+          }
+        }
+      };
+      
+      // Prevent Enter key from creating new line, save instead
+      label.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          label.blur();
+        }
+        // Allow Escape to cancel editing
+        if (e.key === 'Escape') {
+          const currentTaskName = subtaskIndex !== null 
+            ? checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].subtasks[subtaskIndex].name
+            : checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].name;
+          label.textContent = currentTaskName;
+          label.contentEditable = false;
+          label.blur();
+        }
+      };
 
       leftDiv.appendChild(checkbox);
       leftDiv.appendChild(label);
 
       const rightIcon = document.createElement('span');
       rightIcon.className = 'material-symbols-outlined text-slate-400 dark:text-slate-500';
-      rightIcon.textContent = hasLink ? 'chevron_right' : '';
+      rightIcon.textContent = hasLinks ? 'chevron_right' : '';
+      rightIcon.style.pointerEvents = 'none'; // Icon is just visual, row handles click
 
       row.appendChild(leftDiv);
-      if (hasLink) {
+      if (hasLinks) {
         row.appendChild(rightIcon);
       }
 
@@ -398,15 +649,205 @@
     // Update task row appearance
     function updateTaskRow(row, taskId, taskName) {
       const checkbox = row.querySelector('input[type="checkbox"]');
-      const label = row.querySelector('span:not(.material-symbols-outlined)');
+      const label = row.querySelector(`span[data-task-id="${taskId}"]`);
       const isCompleted = isTaskCompleted(taskId);
 
-      checkbox.checked = isCompleted;
-      if (isCompleted) {
-        label.classList.add('strikethrough');
-      } else {
-        label.classList.remove('strikethrough');
+      if (checkbox) checkbox.checked = isCompleted;
+      if (label) {
+        if (isCompleted) {
+          label.classList.add('strikethrough');
+        } else {
+          label.classList.remove('strikethrough');
+        }
       }
+    }
+
+    // Track currently selected task row
+    let selectedTaskRow = null;
+
+    // Get tag color classes based on tag type
+    function getTagColorClasses(tag) {
+      const tagLower = tag.toLowerCase().trim();
+      const tagNormalized = tagLower.replace(/[\/\s]+/g, ' '); // Normalize slashes and spaces
+      
+      const colorMap = {
+        'video': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+        'blog': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+        'social media': 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
+        'e-commerce': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+        'news': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+        'government official': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+        'government/official': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+        'visa': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+        'housing': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+        'finance': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+        'legal': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+        'health': 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
+        'work': 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+        'transport': 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300',
+        'logistics': 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
+        'digital': 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
+        'family': 'bg-lime-100 text-lime-800 dark:bg-lime-900/30 dark:text-lime-300',
+        'culture': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+        'planning': 'bg-slate-100 text-slate-800 dark:bg-slate-700/30 dark:text-slate-300'
+      };
+      
+      // Try exact match first (with original case)
+      if (colorMap[tag]) {
+        return colorMap[tag];
+      }
+      
+      // Try normalized match
+      if (colorMap[tagNormalized]) {
+        return colorMap[tagNormalized];
+      }
+      
+      // Try lowercase match
+      if (colorMap[tagLower]) {
+        return colorMap[tagLower];
+      }
+      
+      // Try partial match for tags like "Government/Official"
+      for (const [key, value] of Object.entries(colorMap)) {
+        const keyNormalized = key.toLowerCase().replace(/[\/\s]+/g, ' ');
+        if (tagNormalized.includes(keyNormalized) || keyNormalized.includes(tagNormalized)) {
+          return value;
+        }
+      }
+      
+      // Default color
+      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
+    }
+
+    // Show task links in the right column
+    function showTaskLinks(links, taskName, taskRow = null) {
+      const linksList = document.getElementById('links-list');
+      const linksContainer = document.getElementById('links-container');
+      const drawerOverlay = document.getElementById('drawer-overlay');
+      
+      // Remove highlight from previously selected row
+      if (selectedTaskRow) {
+        selectedTaskRow.classList.remove('bg-primary/10', 'border-primary/20', 'border-l-4');
+      }
+      
+      // Highlight current row and update links container background
+      if (taskRow) {
+        selectedTaskRow = taskRow;
+        taskRow.classList.add('bg-primary/10', 'border-primary/20', 'border-l-4');
+        // Match the links container background to the highlight color
+        linksContainer.classList.remove('bg-white', 'dark:bg-slate-900');
+        linksContainer.classList.add('bg-primary/10', 'dark:bg-primary/10');
+      } else {
+        // Reset background if no task is selected
+        linksContainer.classList.remove('bg-primary/10', 'dark:bg-primary/10');
+        linksContainer.classList.add('bg-white', 'dark:bg-slate-900');
+        selectedTaskRow = null;
+      }
+      
+      if (!links || links.length === 0) {
+        linksList.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">No resources available for this task</p>';
+        // Open drawer on mobile even if no links
+        openDrawer();
+        return;
+      }
+
+      // Clear existing links
+      linksList.innerHTML = '';
+
+      // Create cards for each link
+      links.forEach(link => {
+        // Handle both new format (object with link_url) and old format (string)
+        const linkUrl = typeof link === 'string' ? link : (link.link_url || '');
+        const linkTitle = typeof link === 'string' ? link : (link.title || 'Untitled Resource');
+        const linkImage = typeof link === 'string' ? '' : (link.image_url || '');
+        const linkTags = typeof link === 'string' ? [] : (link.tags || []);
+        
+        const card = document.createElement('div');
+        card.className = 'bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer';
+        card.onclick = () => {
+          if (linkUrl) {
+            window.open(linkUrl, '_blank');
+          }
+        };
+
+        // Image section (if image_url exists)
+        if (linkImage && linkImage.trim() !== '') {
+          const imageDiv = document.createElement('div');
+          imageDiv.className = 'w-full bg-white overflow-hidden flex items-center justify-center p-3';
+          imageDiv.style.minHeight = '120px';
+          imageDiv.style.maxHeight = '200px';
+          const img = document.createElement('img');
+          img.src = linkImage;
+          img.alt = linkTitle;
+          img.className = 'w-full h-auto max-h-full object-contain';
+          img.style.maxWidth = '100%';
+          img.onerror = () => {
+            // Hide image on error
+            imageDiv.style.display = 'none';
+          };
+          imageDiv.appendChild(img);
+          card.appendChild(imageDiv);
+        }
+
+        // Content section
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'p-4';
+
+        // Title
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'font-semibold text-slate-900 dark:text-white mb-2 line-clamp-2';
+        titleDiv.textContent = linkTitle;
+        contentDiv.appendChild(titleDiv);
+
+        // Tags
+        if (linkTags && Array.isArray(linkTags) && linkTags.length > 0) {
+          const tagsDiv = document.createElement('div');
+          tagsDiv.className = 'flex flex-wrap gap-1.5 mt-2';
+          linkTags.forEach(tag => {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = `inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTagColorClasses(tag)}`;
+            tagSpan.textContent = tag;
+            tagsDiv.appendChild(tagSpan);
+          });
+          contentDiv.appendChild(tagsDiv);
+        }
+
+        card.appendChild(contentDiv);
+        linksList.appendChild(card);
+      });
+      
+      // Open drawer on mobile
+      openDrawer();
+    }
+
+    // Drawer functions for mobile
+    function openDrawer() {
+      const linksContainer = document.getElementById('links-container');
+      const drawerOverlay = document.getElementById('drawer-overlay');
+      
+      // Only show drawer on mobile (below lg breakpoint)
+      if (window.innerWidth < 1024) {
+        linksContainer.classList.remove('translate-x-full');
+        linksContainer.classList.add('translate-x-0');
+        if (drawerOverlay) {
+          drawerOverlay.classList.remove('hidden');
+        }
+        // Prevent body scroll when drawer is open
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeDrawer() {
+      const linksContainer = document.getElementById('links-container');
+      const drawerOverlay = document.getElementById('drawer-overlay');
+      
+      linksContainer.classList.remove('translate-x-0');
+      linksContainer.classList.add('translate-x-full');
+      if (drawerOverlay) {
+        drawerOverlay.classList.add('hidden');
+      }
+      // Restore body scroll
+      document.body.style.overflow = '';
     }
 
     // Toggle category expand/collapse
@@ -513,8 +954,78 @@
       document.getElementById('overall-progress-bar').style.width = `${percent}%`;
     }
 
+    // Handle signup button click - open Google Form
+    function handleSignup() {
+      console.log('Signup button clicked - opening Google Form');
+      window.open('https://forms.gle/zCZ1LTBNgAjFC3zx6', '_blank');
+    }
+
+    // Wire up signup button
+    function wireUpSignupButton() {
+      // Find signup button by text content or by being in header
+      const signupButton = Array.from(document.querySelectorAll('a')).find(a => 
+        a.textContent.trim() === 'Signup' && a.closest('header')
+      );
+      if (signupButton) {
+        console.log('Signup button found, handler function:', typeof handleSignup);
+        // Remove existing onclick to avoid double-firing, then add event listener
+        signupButton.removeAttribute('onclick');
+        signupButton.addEventListener('click', function(e) {
+          console.log('Signup button clicked via event listener');
+          e.preventDefault();
+          handleSignup();
+        });
+      } else {
+        console.warn('Signup button not found!');
+      }
+    }
+
+    // Wire up drawer close functionality
+    function wireUpDrawer() {
+      const closeBtn = document.getElementById('close-drawer-btn');
+      const overlay = document.getElementById('drawer-overlay');
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeDrawer);
+      }
+      
+      if (overlay) {
+        overlay.addEventListener('click', closeDrawer);
+      }
+      
+      // Close drawer on window resize if switching to desktop
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+          closeDrawer();
+        }
+      });
+    }
+    
     // Initialize on page load
     init();
+    
+    // Wire up signup button when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        wireUpSignupButton();
+        wireUpDrawer();
+      });
+    } else {
+      // DOM already loaded
+      wireUpSignupButton();
+      wireUpDrawer();
+    }
+  </script>
+
+  <!-- UserBack Feedback Widget -->
+  <script>
+    window.Userback = window.Userback || {};
+
+    Userback.access_token = "A-w4OQPAJGddZyhz0o2RCfyuaQk";
+
+    (function(d) {
+      var s = d.createElement('script');s.async = true;s.src = 'https://static.userback.io/widget/v1.js';(d.head || d.body).appendChild(s);
+    })(document);
   </script>
 </body>
 </html>
