@@ -55,7 +55,7 @@
       <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
         <div class="flex justify-between items-start pt-6">
           <div class="text-white font-bold text-xl">🇯🇵</div>
-          <a class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="#">Signup</a>
+          <a class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="javascript:void(0)" onclick="handleSignup()">Signup</a>
         </div>
         <div class="flex flex-col items-center justify-center h-full text-center text-white pb-16">
           <h1 class="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">Moving to Japan Checklist</h1>
@@ -724,8 +724,42 @@
       document.getElementById('overall-progress-bar').style.width = `${percent}%`;
     }
 
+    // Handle signup button click - open Google Form
+    function handleSignup() {
+      console.log('Signup button clicked - opening Google Form');
+      window.open('https://forms.gle/zCZ1LTBNgAjFC3zx6', '_blank');
+    }
+
+    // Wire up signup button
+    function wireUpSignupButton() {
+      // Find signup button by text content or by being in header
+      const signupButton = Array.from(document.querySelectorAll('a')).find(a => 
+        a.textContent.trim() === 'Signup' && a.closest('header')
+      );
+      if (signupButton) {
+        console.log('Signup button found, handler function:', typeof handleSignup);
+        // Remove existing onclick to avoid double-firing, then add event listener
+        signupButton.removeAttribute('onclick');
+        signupButton.addEventListener('click', function(e) {
+          console.log('Signup button clicked via event listener');
+          e.preventDefault();
+          handleSignup();
+        });
+      } else {
+        console.warn('Signup button not found!');
+      }
+    }
+    
     // Initialize on page load
     init();
+    
+    // Wire up signup button when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', wireUpSignupButton);
+    } else {
+      // DOM already loaded
+      wireUpSignupButton();
+    }
   </script>
 
   <!-- UserBack Feedback Widget -->
