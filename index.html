@@ -45,6 +45,20 @@
       border-color: #0EA5E9;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/%3E%3C/svg%3E");
     }
+    /* Line clamp utility */
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    /* Links container max-height for desktop */
+    @media (min-width: 1024px) {
+      #links-container {
+        max-height: calc(100vh - 8rem);
+      }
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
@@ -66,7 +80,7 @@
 
     <!-- Main Content -->
     <main class="pt-8 pb-20">
-      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <!-- Overall Progress -->
         <div class="mb-6 bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8">
           <div class="flex justify-between items-center mb-2">
@@ -79,9 +93,36 @@
           </div>
         </div>
 
-        <!-- Checklist Container -->
-        <div id="checklist-container" class="bg-background-light dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8 space-y-8">
-          <div class="text-center text-slate-600 dark:text-slate-400">Loading checklist...</div>
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Checklist Container (Left Column - 2/3 width) -->
+          <div class="lg:col-span-2">
+            <div id="checklist-container" class="bg-background-light dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8 space-y-8">
+              <div class="text-center text-slate-600 dark:text-slate-400">Loading checklist...</div>
+            </div>
+          </div>
+
+          <!-- Links Column (Right Column - 1/3 width, Drawer on mobile) -->
+          <div class="lg:col-span-1">
+            <div id="links-container" class="fixed lg:sticky top-0 right-0 h-full lg:h-auto w-full max-w-sm lg:max-w-none bg-white dark:bg-slate-900 rounded-lg lg:rounded-lg shadow-xl lg:shadow-xl p-6 flex flex-col transform translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-50" style="max-height: 100vh;">
+              <!-- Drawer header with close button (mobile only) -->
+              <div class="flex justify-between items-center mb-4 lg:hidden">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Resources</h3>
+                <button id="close-drawer-btn" class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              <!-- Desktop header -->
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex-shrink-0 hidden lg:block">Resources</h3>
+              <div id="links-list" class="space-y-4 overflow-y-auto flex-1">
+                <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">
+                  Click on a checklist item to view related resources
+                </p>
+              </div>
+            </div>
+            <!-- Drawer overlay (mobile only) -->
+            <div id="drawer-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden"></div>
+          </div>
         </div>
       </div>
     </main>
@@ -121,7 +162,7 @@
     let completedTasks = new Set();
     
     // Default URL for checklist JSON
-    const DEFAULT_CHECKLIST_URL = 'https://gist.githubusercontent.com/jalakoo/44ba89b8f60fc97400c9750112e5ba7c/raw/9cbd1e1f9a0f21386d800e20f9f707cf1bdb5910/move2japan_from_us.json';
+    const DEFAULT_CHECKLIST_URL = 'https://gist.githubusercontent.com/jalakoo/44ba89b8f60fc97400c9750112e5ba7c/raw/move2japan_from_us.json';
 
     // Load initial checklist from JSON URL
     async function loadInitialChecklist() {
@@ -497,10 +538,21 @@
     function createTaskRow(task, mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex = null, isSubtask = false) {
       const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
       const isCompleted = isTaskCompleted(taskId);
-      const hasLink = task.links && task.links.length > 0;
+      const hasLinks = task.links && task.links.length > 0;
 
       const row = document.createElement('div');
-      row.className = 'flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-150';
+      row.className = `flex items-center justify-between p-4 transition-colors duration-150 ${hasLinks ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer' : ''}`;
+      
+      // Make entire row clickable (except checkbox) to show links
+      if (hasLinks) {
+        row.onclick = (e) => {
+          // Don't trigger if clicking checkbox or label (for editing)
+          if (e.target.type === 'checkbox' || e.target.contentEditable === 'true') {
+            return;
+          }
+          showTaskLinks(task.links, task.name, row);
+        };
+      }
       
       const leftDiv = document.createElement('div');
       leftDiv.className = 'flex items-center space-x-4 flex-1';
@@ -516,7 +568,7 @@
       };
 
       const label = document.createElement('span');
-      label.className = `text-slate-700 dark:text-slate-300 ${isCompleted ? 'strikethrough' : ''} cursor-text`;
+      label.className = `text-slate-700 dark:text-slate-300 ${isCompleted ? 'strikethrough' : ''} ${hasLinks ? 'cursor-pointer' : 'cursor-text'}`;
       label.textContent = task.name;
       label.contentEditable = false;
       label.setAttribute('data-task-id', taskId); // Store taskId for reference
@@ -583,21 +635,11 @@
 
       const rightIcon = document.createElement('span');
       rightIcon.className = 'material-symbols-outlined text-slate-400 dark:text-slate-500';
-      rightIcon.textContent = hasLink ? 'chevron_right' : '';
-      
-      // Only the caret icon opens the link
-      if (hasLink) {
-        rightIcon.style.cursor = 'pointer';
-        rightIcon.onclick = (e) => {
-          e.stopPropagation();
-          if (task.links && task.links.length > 0) {
-            window.open(task.links[0], '_blank');
-          }
-        };
-      }
+      rightIcon.textContent = hasLinks ? 'chevron_right' : '';
+      rightIcon.style.pointerEvents = 'none'; // Icon is just visual, row handles click
 
       row.appendChild(leftDiv);
-      if (hasLink) {
+      if (hasLinks) {
         row.appendChild(rightIcon);
       }
 
@@ -618,6 +660,194 @@
           label.classList.remove('strikethrough');
         }
       }
+    }
+
+    // Track currently selected task row
+    let selectedTaskRow = null;
+
+    // Get tag color classes based on tag type
+    function getTagColorClasses(tag) {
+      const tagLower = tag.toLowerCase().trim();
+      const tagNormalized = tagLower.replace(/[\/\s]+/g, ' '); // Normalize slashes and spaces
+      
+      const colorMap = {
+        'video': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+        'blog': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+        'social media': 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
+        'e-commerce': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+        'news': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+        'government official': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+        'government/official': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+        'visa': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+        'housing': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+        'finance': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+        'legal': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+        'health': 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
+        'work': 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+        'transport': 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300',
+        'logistics': 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
+        'digital': 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
+        'family': 'bg-lime-100 text-lime-800 dark:bg-lime-900/30 dark:text-lime-300',
+        'culture': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+        'planning': 'bg-slate-100 text-slate-800 dark:bg-slate-700/30 dark:text-slate-300'
+      };
+      
+      // Try exact match first (with original case)
+      if (colorMap[tag]) {
+        return colorMap[tag];
+      }
+      
+      // Try normalized match
+      if (colorMap[tagNormalized]) {
+        return colorMap[tagNormalized];
+      }
+      
+      // Try lowercase match
+      if (colorMap[tagLower]) {
+        return colorMap[tagLower];
+      }
+      
+      // Try partial match for tags like "Government/Official"
+      for (const [key, value] of Object.entries(colorMap)) {
+        const keyNormalized = key.toLowerCase().replace(/[\/\s]+/g, ' ');
+        if (tagNormalized.includes(keyNormalized) || keyNormalized.includes(tagNormalized)) {
+          return value;
+        }
+      }
+      
+      // Default color
+      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
+    }
+
+    // Show task links in the right column
+    function showTaskLinks(links, taskName, taskRow = null) {
+      const linksList = document.getElementById('links-list');
+      const linksContainer = document.getElementById('links-container');
+      const drawerOverlay = document.getElementById('drawer-overlay');
+      
+      // Remove highlight from previously selected row
+      if (selectedTaskRow) {
+        selectedTaskRow.classList.remove('bg-primary/10', 'border-primary/20', 'border-l-4');
+      }
+      
+      // Highlight current row and update links container background
+      if (taskRow) {
+        selectedTaskRow = taskRow;
+        taskRow.classList.add('bg-primary/10', 'border-primary/20', 'border-l-4');
+        // Match the links container background to the highlight color
+        linksContainer.classList.remove('bg-white', 'dark:bg-slate-900');
+        linksContainer.classList.add('bg-primary/10', 'dark:bg-primary/10');
+      } else {
+        // Reset background if no task is selected
+        linksContainer.classList.remove('bg-primary/10', 'dark:bg-primary/10');
+        linksContainer.classList.add('bg-white', 'dark:bg-slate-900');
+        selectedTaskRow = null;
+      }
+      
+      if (!links || links.length === 0) {
+        linksList.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">No resources available for this task</p>';
+        // Open drawer on mobile even if no links
+        openDrawer();
+        return;
+      }
+
+      // Clear existing links
+      linksList.innerHTML = '';
+
+      // Create cards for each link
+      links.forEach(link => {
+        // Handle both new format (object with link_url) and old format (string)
+        const linkUrl = typeof link === 'string' ? link : (link.link_url || '');
+        const linkTitle = typeof link === 'string' ? link : (link.title || 'Untitled Resource');
+        const linkImage = typeof link === 'string' ? '' : (link.image_url || '');
+        const linkTags = typeof link === 'string' ? [] : (link.tags || []);
+        
+        const card = document.createElement('div');
+        card.className = 'bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer';
+        card.onclick = () => {
+          if (linkUrl) {
+            window.open(linkUrl, '_blank');
+          }
+        };
+
+        // Image section (if image_url exists)
+        if (linkImage && linkImage.trim() !== '') {
+          const imageDiv = document.createElement('div');
+          imageDiv.className = 'w-full bg-white overflow-hidden flex items-center justify-center p-3';
+          imageDiv.style.minHeight = '120px';
+          imageDiv.style.maxHeight = '200px';
+          const img = document.createElement('img');
+          img.src = linkImage;
+          img.alt = linkTitle;
+          img.className = 'w-full h-auto max-h-full object-contain';
+          img.style.maxWidth = '100%';
+          img.onerror = () => {
+            // Hide image on error
+            imageDiv.style.display = 'none';
+          };
+          imageDiv.appendChild(img);
+          card.appendChild(imageDiv);
+        }
+
+        // Content section
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'p-4';
+
+        // Title
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'font-semibold text-slate-900 dark:text-white mb-2 line-clamp-2';
+        titleDiv.textContent = linkTitle;
+        contentDiv.appendChild(titleDiv);
+
+        // Tags
+        if (linkTags && Array.isArray(linkTags) && linkTags.length > 0) {
+          const tagsDiv = document.createElement('div');
+          tagsDiv.className = 'flex flex-wrap gap-1.5 mt-2';
+          linkTags.forEach(tag => {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = `inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTagColorClasses(tag)}`;
+            tagSpan.textContent = tag;
+            tagsDiv.appendChild(tagSpan);
+          });
+          contentDiv.appendChild(tagsDiv);
+        }
+
+        card.appendChild(contentDiv);
+        linksList.appendChild(card);
+      });
+      
+      // Open drawer on mobile
+      openDrawer();
+    }
+
+    // Drawer functions for mobile
+    function openDrawer() {
+      const linksContainer = document.getElementById('links-container');
+      const drawerOverlay = document.getElementById('drawer-overlay');
+      
+      // Only show drawer on mobile (below lg breakpoint)
+      if (window.innerWidth < 1024) {
+        linksContainer.classList.remove('translate-x-full');
+        linksContainer.classList.add('translate-x-0');
+        if (drawerOverlay) {
+          drawerOverlay.classList.remove('hidden');
+        }
+        // Prevent body scroll when drawer is open
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeDrawer() {
+      const linksContainer = document.getElementById('links-container');
+      const drawerOverlay = document.getElementById('drawer-overlay');
+      
+      linksContainer.classList.remove('translate-x-0');
+      linksContainer.classList.add('translate-x-full');
+      if (drawerOverlay) {
+        drawerOverlay.classList.add('hidden');
+      }
+      // Restore body scroll
+      document.body.style.overflow = '';
     }
 
     // Toggle category expand/collapse
@@ -749,16 +979,41 @@
         console.warn('Signup button not found!');
       }
     }
+
+    // Wire up drawer close functionality
+    function wireUpDrawer() {
+      const closeBtn = document.getElementById('close-drawer-btn');
+      const overlay = document.getElementById('drawer-overlay');
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeDrawer);
+      }
+      
+      if (overlay) {
+        overlay.addEventListener('click', closeDrawer);
+      }
+      
+      // Close drawer on window resize if switching to desktop
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+          closeDrawer();
+        }
+      });
+    }
     
     // Initialize on page load
     init();
     
     // Wire up signup button when DOM is ready
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', wireUpSignupButton);
+      document.addEventListener('DOMContentLoaded', () => {
+        wireUpSignupButton();
+        wireUpDrawer();
+      });
     } else {
       // DOM already loaded
       wireUpSignupButton();
+      wireUpDrawer();
     }
   </script>
 
