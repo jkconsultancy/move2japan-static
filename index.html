@@ -39,6 +39,12 @@
     .dark .strikethrough {
       color: #64748b;
     }
+    /* Indeterminate checkbox styling */
+    input[type="checkbox"]:indeterminate {
+      background-color: #0EA5E9;
+      border-color: #0EA5E9;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/%3E%3C/svg%3E");
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
@@ -222,6 +228,125 @@
       saveProgress();
       updateOverallProgress();
       updateCategoryProgress();
+      
+      // Update phase checkbox state if task belongs to a phase
+      const parts = taskId.split('::');
+      if (parts.length >= 2) {
+        const phaseKey = parts[1];
+        const mainKey = parts[0];
+        const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
+        if (categoryDiv) {
+          const phaseCheckbox = categoryDiv.querySelector('input[type="checkbox"]');
+          if (phaseCheckbox) {
+            updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
+          }
+        }
+      }
+    }
+
+    // Toggle all tasks in a phase
+    function togglePhaseTasks(phaseKey, mainKey, checked) {
+      const phase = checklistData[mainKey][phaseKey];
+      const taskIds = [];
+
+      // Collect all task IDs in this phase
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        if (subSection.tasks) {
+          subSection.tasks.forEach((task, taskIndex) => {
+            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+            taskIds.push(taskId);
+
+            // Also collect subtasks
+            if (task.subtasks) {
+              task.subtasks.forEach((subtask, subtaskIndex) => {
+                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+                taskIds.push(subtaskId);
+              });
+            }
+          });
+        }
+      }
+
+      // Toggle all tasks
+      if (checked) {
+        taskIds.forEach(taskId => completedTasks.add(taskId));
+      } else {
+        taskIds.forEach(taskId => completedTasks.delete(taskId));
+      }
+
+      // Update UI for all affected task rows
+      taskIds.forEach(taskId => {
+        const parts = taskId.split('::');
+        if (parts.length >= 4) {
+          const row = document.querySelector(`span[data-task-id="${taskId}"]`)?.closest('.flex.items-center');
+          if (row) {
+            const checkbox = row.querySelector('input[type="checkbox"]');
+            const label = row.querySelector(`span[data-task-id="${taskId}"]`);
+            if (checkbox) {
+              checkbox.checked = checked;
+              if (label) {
+                if (checked) {
+                  label.classList.add('strikethrough');
+                } else {
+                  label.classList.remove('strikethrough');
+                }
+              }
+            }
+          }
+        }
+      });
+
+      saveProgress();
+      updateOverallProgress();
+      updateCategoryProgress(phaseKey);
+    }
+
+    // Update phase checkbox state based on task completion
+    function updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox) {
+      const phase = checklistData[mainKey][phaseKey];
+      let totalTasks = 0;
+      let completedCount = 0;
+
+      // Count all tasks in this phase
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        if (subSection.tasks) {
+          subSection.tasks.forEach((task, taskIndex) => {
+            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+            totalTasks++;
+            if (isTaskCompleted(taskId)) {
+              completedCount++;
+            }
+
+            // Also count subtasks
+            if (task.subtasks) {
+              task.subtasks.forEach((subtask, subtaskIndex) => {
+                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+                totalTasks++;
+                if (isTaskCompleted(subtaskId)) {
+                  completedCount++;
+                }
+              });
+            }
+          });
+        }
+      }
+
+      // Set checkbox state: checked if all tasks are completed, indeterminate if some are completed
+      if (totalTasks === 0) {
+        phaseCheckbox.checked = false;
+        phaseCheckbox.indeterminate = false;
+      } else if (completedCount === totalTasks) {
+        phaseCheckbox.checked = true;
+        phaseCheckbox.indeterminate = false;
+      } else if (completedCount > 0) {
+        phaseCheckbox.checked = false;
+        phaseCheckbox.indeterminate = true;
+      } else {
+        phaseCheckbox.checked = false;
+        phaseCheckbox.indeterminate = false;
+      }
     }
 
     // Save progress to cookie
@@ -245,36 +370,63 @@
 
       const mainKey = Object.keys(checklistData)[0];
       const phases = checklistData[mainKey];
+      let isFirstPhase = true;
 
       for (const phaseKey in phases) {
         const phase = phases[phaseKey];
-        const categoryElement = createCategoryElement(phaseKey, phase, mainKey);
+        const categoryElement = createCategoryElement(phaseKey, phase, mainKey, isFirstPhase);
         container.appendChild(categoryElement);
+        isFirstPhase = false;
       }
     }
 
     // Create category element (Phase)
-    function createCategoryElement(phaseKey, phase, mainKey) {
+    function createCategoryElement(phaseKey, phase, mainKey, isFirstPhase = true) {
       const categoryDiv = document.createElement('div');
       categoryDiv.className = 'space-y-4';
       categoryDiv.dataset.categoryId = phaseKey;
 
       // Category header
       const headerDiv = document.createElement('div');
-      headerDiv.className = 'flex justify-between items-baseline cursor-pointer';
-      headerDiv.onclick = () => toggleCategory(categoryDiv);
+      headerDiv.className = 'flex justify-between items-center cursor-pointer';
+      
+      // Left side with checkbox and title
+      const leftHeaderDiv = document.createElement('div');
+      leftHeaderDiv.className = 'flex items-center space-x-3 flex-1';
+      leftHeaderDiv.onclick = (e) => {
+        // Don't toggle category if clicking on checkbox
+        if (e.target.type !== 'checkbox' && e.target !== leftHeaderDiv.querySelector('input[type="checkbox"]')) {
+          toggleCategory(categoryDiv);
+        }
+      };
+
+      // Phase checkbox
+      const phaseCheckbox = document.createElement('input');
+      phaseCheckbox.type = 'checkbox';
+      phaseCheckbox.className = 'h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary dark:bg-slate-900 dark:border-slate-600';
+      phaseCheckbox.onclick = (e) => {
+        e.stopPropagation();
+        togglePhaseTasks(phaseKey, mainKey, phaseCheckbox.checked);
+      };
 
       const titleDiv = document.createElement('div');
       titleDiv.innerHTML = `<h3 class="text-xl font-bold text-slate-900 dark:text-white">${phaseKey}</h3>`;
+
+      leftHeaderDiv.appendChild(phaseCheckbox);
+      leftHeaderDiv.appendChild(titleDiv);
 
       const progressDiv = document.createElement('div');
       progressDiv.className = 'flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400';
       progressDiv.innerHTML = `
         <span class="category-progress-text">0% Complete</span>
-        <span class="material-symbols-outlined text-base category-caret">expand_more</span>
+        <span class="material-symbols-outlined text-base category-caret">${isFirstPhase ? 'expand_more' : 'chevron_right'}</span>
       `;
+      progressDiv.onclick = (e) => {
+        e.stopPropagation();
+        toggleCategory(categoryDiv);
+      };
 
-      headerDiv.appendChild(titleDiv);
+      headerDiv.appendChild(leftHeaderDiv);
       headerDiv.appendChild(progressDiv);
 
       // Progress bar
@@ -285,7 +437,7 @@
       // Content container (collapsible)
       const contentDiv = document.createElement('div');
       contentDiv.className = 'category-content space-y-6';
-      contentDiv.style.display = 'block'; // Default to expanded
+      contentDiv.style.display = isFirstPhase ? 'block' : 'none'; // First phase expanded, others collapsed
 
       // Render sub-sections
       for (const subSectionKey in phase) {
@@ -298,8 +450,11 @@
       categoryDiv.appendChild(progressBarDiv);
       categoryDiv.appendChild(contentDiv);
 
-      // Update category progress after rendering
-      setTimeout(() => updateCategoryProgress(phaseKey), 0);
+      // Update category progress and checkbox state after rendering
+      setTimeout(() => {
+        updateCategoryProgress(phaseKey);
+        updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
+      }, 0);
 
       return categoryDiv;
     }
