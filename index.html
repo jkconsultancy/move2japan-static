@@ -180,6 +180,188 @@
     .swipe-content.swiped ~ .swipe-refresh {
       display: flex;
     }
+    /* Dialog/Modal styles */
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-center;
+      padding: 1rem;
+    }
+    .dialog-content {
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .dark .dialog-content {
+      background-color: #0f172a;
+    }
+    .dialog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .dialog-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .dark .dialog-title {
+      color: white;
+    }
+    .dialog-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #64748b;
+      padding: 0.25rem;
+    }
+    .dialog-close:hover {
+      color: #0f172a;
+    }
+    .dark .dialog-close:hover {
+      color: white;
+    }
+    .dialog-form-group {
+      margin-bottom: 1rem;
+    }
+    .dialog-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .dark .dialog-label {
+      color: #e2e8f0;
+    }
+    .dialog-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      background-color: white;
+      color: #0f172a;
+    }
+    .dark .dialog-input {
+      background-color: #1e293b;
+      border-color: #475569;
+      color: white;
+    }
+    .dialog-textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      min-height: 80px;
+      resize: vertical;
+      background-color: white;
+      color: #0f172a;
+    }
+    .dark .dialog-textarea {
+      background-color: #1e293b;
+      border-color: #475569;
+      color: white;
+    }
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+    .btn-primary {
+      background-color: #0EA5E9;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-primary:hover {
+      background-color: #0284c7;
+    }
+    .btn-secondary {
+      background-color: #e2e8f0;
+      color: #0f172a;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .dark .btn-secondary {
+      background-color: #475569;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background-color: #cbd5e1;
+    }
+    .dark .btn-secondary:hover {
+      background-color: #64748b;
+    }
+    /* Add button styles */
+    .add-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-top: 0.5rem;
+      background-color: #f1f5f9;
+      border: 2px dashed #cbd5e1;
+      border-radius: 0.5rem;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .dark .add-button {
+      background-color: #1e293b;
+      border-color: #475569;
+      color: #94a3b8;
+    }
+    .add-button:hover {
+      background-color: #e2e8f0;
+      border-color: #0EA5E9;
+      color: #0EA5E9;
+    }
+    .dark .add-button:hover {
+      background-color: #334155;
+      border-color: #0EA5E9;
+      color: #0EA5E9;
+    }
+    /* Editable title styles */
+    .editable-title {
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s;
+    }
+    .editable-title:hover {
+      background-color: #f1f5f9;
+    }
+    .dark .editable-title:hover {
+      background-color: #1e293b;
+    }
+    .editable-title[contenteditable="true"] {
+      outline: 2px solid #0EA5E9;
+      outline-offset: 2px;
+      background-color: white;
+    }
+    .dark .editable-title[contenteditable="true"] {
+      background-color: #1e293b;
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
@@ -205,13 +387,13 @@
         <!-- Overall Progress -->
         <div class="mb-6 swipe-container">
           <div id="overall-progress-content" class="swipe-content bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 sm:p-8">
-            <div class="flex justify-between items-center mb-2">
-              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Overall Progress</h2>
-              <span id="overall-progress-percent" class="text-lg font-bold text-primary">0%</span>
-            </div>
-            <p id="overall-progress-text" class="text-sm text-slate-600 dark:text-slate-400 mb-4">Loading...</p>
-            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
-              <div id="overall-progress-bar" class="bg-primary h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Overall Progress</h2>
+            <span id="overall-progress-percent" class="text-lg font-bold text-primary">0%</span>
+          </div>
+          <p id="overall-progress-text" class="text-sm text-slate-600 dark:text-slate-400 mb-4">Loading...</p>
+          <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+            <div id="overall-progress-bar" class="bg-primary h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
             </div>
           </div>
           <div id="overall-progress-refresh" class="swipe-refresh">
@@ -580,6 +762,13 @@
         container.appendChild(categoryElement);
         isFirstPhase = false;
       }
+      
+      // Add "+ Phase" button at the bottom
+      const addPhaseButton = document.createElement('button');
+      addPhaseButton.className = 'add-button w-full';
+      addPhaseButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Phase</span>';
+      addPhaseButton.onclick = () => addNewPhase(mainKey);
+      container.appendChild(addPhaseButton);
     }
 
     // Create category element (Phase)
@@ -618,8 +807,81 @@
       };
 
       const titleDiv = document.createElement('div');
-      titleDiv.innerHTML = `<h3 class="text-xl font-bold text-slate-900 dark:text-white">${phaseKey}</h3>`;
+      const titleH3 = document.createElement('h3');
+      titleH3.className = 'text-xl font-bold text-slate-900 dark:text-white editable-title';
+      titleH3.textContent = phaseKey;
+      titleH3.contentEditable = false;
+      titleH3.setAttribute('data-phase-key', phaseKey);
+      titleH3.setAttribute('data-main-key', mainKey);
+      
+      // Make title editable on click
+      titleH3.onclick = (e) => {
+        e.stopPropagation();
+        if (!titleH3.contentEditable || titleH3.contentEditable === 'false') {
+          titleH3.contentEditable = true;
+          titleH3.focus();
+          const range = document.createRange();
+          range.selectNodeContents(titleH3);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      };
+      
+      // Save edited title
+      titleH3.onblur = () => {
+        if (titleH3.contentEditable === 'true' || titleH3.contentEditable === true) {
+          titleH3.contentEditable = false;
+          const newTitle = titleH3.textContent.trim();
+          if (newTitle && newTitle !== phaseKey) {
+            // Rename phase in data structure
+            const mainKey = titleH3.getAttribute('data-main-key');
+            const oldPhaseKey = titleH3.getAttribute('data-phase-key');
+            const phase = checklistData[mainKey][oldPhaseKey];
+            delete checklistData[mainKey][oldPhaseKey];
+            checklistData[mainKey][newTitle] = phase;
+            
+            // Update data attributes
+            titleH3.setAttribute('data-phase-key', newTitle);
+            categoryDiv.dataset.categoryId = newTitle;
+            headerDiv.setAttribute('data-phase-key', newTitle);
+            
+            // Update all task IDs that reference this phase
+            const newCompletedTasks = new Set();
+            completedTasks.forEach(taskId => {
+              const parts = taskId.split('::');
+              if (parts.length >= 2 && parts[1] === oldPhaseKey) {
+                parts[1] = newTitle;
+                newCompletedTasks.add(parts.join('::'));
+              } else {
+                newCompletedTasks.add(taskId);
+              }
+            });
+            completedTasks = newCompletedTasks;
+            
+            saveProgress();
+            updateOverallProgress();
+            updateCategoryProgress(newTitle);
+          } else if (!newTitle) {
+            titleH3.textContent = phaseKey;
+          }
+        }
+      };
+      
+      // Prevent Enter key from creating new line, save instead
+      titleH3.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          titleH3.blur();
+        }
+        if (e.key === 'Escape') {
+          titleH3.textContent = phaseKey;
+          titleH3.contentEditable = false;
+          titleH3.blur();
+        }
+      };
 
+      titleDiv.appendChild(titleH3);
       leftHeaderDiv.appendChild(phaseCheckbox);
       leftHeaderDiv.appendChild(titleDiv);
 
@@ -669,6 +931,13 @@
         contentDiv.appendChild(subSectionElement);
       }
 
+      // Add "+ Category" button as last item in phase
+      const addCategoryButton = document.createElement('button');
+      addCategoryButton.className = 'add-button w-full';
+      addCategoryButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Category</span>';
+      addCategoryButton.onclick = () => addNewCategory(mainKey, phaseKey, contentDiv);
+      contentDiv.appendChild(addCategoryButton);
+
       categoryDiv.appendChild(phaseHeaderSwipeContainer);
       categoryDiv.appendChild(progressBarDiv);
       categoryDiv.appendChild(contentDiv);
@@ -692,11 +961,78 @@
       subSectionSwipeContainer.className = 'swipe-container';
 
       const subSectionTitle = document.createElement('h4');
-      subSectionTitle.className = 'swipe-content text-lg font-semibold text-slate-800 dark:text-slate-200 py-2 cursor-pointer';
+      subSectionTitle.className = 'swipe-content text-lg font-semibold text-slate-800 dark:text-slate-200 py-2 cursor-pointer editable-title';
       subSectionTitle.textContent = subSectionKey;
+      subSectionTitle.contentEditable = false;
       subSectionTitle.setAttribute('data-subsection-key', subSectionKey);
       subSectionTitle.setAttribute('data-phase-key', phaseKey);
       subSectionTitle.setAttribute('data-main-key', mainKey);
+      
+      // Make title editable on click
+      subSectionTitle.onclick = (e) => {
+        e.stopPropagation();
+        if (!subSectionTitle.classList.contains('swiped') && (!subSectionTitle.contentEditable || subSectionTitle.contentEditable === 'false')) {
+          subSectionTitle.contentEditable = true;
+          subSectionTitle.focus();
+          const range = document.createRange();
+          range.selectNodeContents(subSectionTitle);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      };
+      
+      // Save edited title
+      subSectionTitle.onblur = () => {
+        if (subSectionTitle.contentEditable === 'true' || subSectionTitle.contentEditable === true) {
+          subSectionTitle.contentEditable = false;
+          const newTitle = subSectionTitle.textContent.trim();
+          if (newTitle && newTitle !== subSectionKey) {
+            // Rename sub-section in data structure
+            const mainKey = subSectionTitle.getAttribute('data-main-key');
+            const phaseKey = subSectionTitle.getAttribute('data-phase-key');
+            const oldSubSectionKey = subSectionTitle.getAttribute('data-subsection-key');
+            const subSection = checklistData[mainKey][phaseKey][oldSubSectionKey];
+            delete checklistData[mainKey][phaseKey][oldSubSectionKey];
+            checklistData[mainKey][phaseKey][newTitle] = subSection;
+            
+            // Update data attributes
+            subSectionTitle.setAttribute('data-subsection-key', newTitle);
+            
+            // Update all task IDs that reference this sub-section
+            const newCompletedTasks = new Set();
+            completedTasks.forEach(taskId => {
+              const parts = taskId.split('::');
+              if (parts.length >= 3 && parts[1] === phaseKey && parts[2] === oldSubSectionKey) {
+                parts[2] = newTitle;
+                newCompletedTasks.add(parts.join('::'));
+              } else {
+                newCompletedTasks.add(taskId);
+              }
+            });
+            completedTasks = newCompletedTasks;
+            
+            saveProgress();
+            updateOverallProgress();
+            updateCategoryProgress(phaseKey);
+          } else if (!newTitle) {
+            subSectionTitle.textContent = subSectionKey;
+          }
+        }
+      };
+      
+      // Prevent Enter key from creating new line, save instead
+      subSectionTitle.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          subSectionTitle.blur();
+        }
+        if (e.key === 'Escape') {
+          subSectionTitle.textContent = subSectionKey;
+          subSectionTitle.contentEditable = false;
+          subSectionTitle.blur();
+        }
+      };
 
       // Create delete button for sub-section
       const subSectionDeleteButton = document.createElement('div');
@@ -734,6 +1070,13 @@
           }
         });
       }
+      
+      // Add "+ Task" button as last item in tasks container
+      const addTaskButton = document.createElement('button');
+      addTaskButton.className = 'add-button w-full';
+      addTaskButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Task</span>';
+      addTaskButton.onclick = () => showAddTaskDialog(mainKey, phaseKey, subSectionKey, tasksContainer, subSectionDiv);
+      tasksContainer.appendChild(addTaskButton);
 
       subSectionDiv.appendChild(tasksContainer);
       return subSectionDiv;
@@ -1145,6 +1488,8 @@
 
     // Track currently selected task row
     let selectedTaskRow = null;
+    // Track current task info for adding resources
+    let currentTaskInfo = null;
 
     // Get tag color classes based on tag type
     function getTagColorClasses(tag) {
@@ -1206,6 +1551,17 @@
       const linksContainer = document.getElementById('links-container');
       const drawerOverlay = document.getElementById('drawer-overlay');
       
+      // Extract task info from taskRow if available
+      if (taskRow) {
+        const mainKey = taskRow.getAttribute('data-main-key');
+        const phaseKey = taskRow.getAttribute('data-phase-key');
+        const subSectionKey = taskRow.getAttribute('data-subsection-key');
+        const taskIndex = parseInt(taskRow.getAttribute('data-task-index'));
+        currentTaskInfo = { mainKey, phaseKey, subSectionKey, taskIndex };
+      } else {
+        currentTaskInfo = null;
+      }
+      
       // Remove highlight from previously selected row
       if (selectedTaskRow) {
         selectedTaskRow.classList.remove('bg-primary/10', 'border-primary/20', 'border-l-4');
@@ -1225,28 +1581,44 @@
         selectedTaskRow = null;
       }
       
+      // Clear existing links
+      linksList.innerHTML = '';
+
       if (!links || links.length === 0) {
         linksList.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">No resources available for this task</p>';
+        // Add "+ Resource" button if we have task info
+        if (currentTaskInfo) {
+          const addResourceButton = document.createElement('button');
+          addResourceButton.className = 'add-button w-full mt-4';
+          addResourceButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>+ Resource</span>';
+          addResourceButton.onclick = () => {
+            if (currentTaskInfo) {
+              showAddResourceDialog(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex);
+            }
+          };
+          linksList.appendChild(addResourceButton);
+        }
         // Open drawer on mobile even if no links
         openDrawer();
         return;
       }
 
-      // Clear existing links
-      linksList.innerHTML = '';
-
-      // Create cards for each link
-      links.forEach(link => {
+      // Create cards for each link with swipe-to-delete
+      links.forEach((link, linkIndex) => {
         // Handle both new format (object with link_url) and old format (string)
         const linkUrl = typeof link === 'string' ? link : (link.link_url || '');
         const linkTitle = typeof link === 'string' ? link : (link.title || 'Untitled Resource');
         const linkImage = typeof link === 'string' ? '' : (link.image_url || '');
         const linkTags = typeof link === 'string' ? [] : (link.tags || []);
         
+        // Create swipe container
+        const swipeContainer = document.createElement('div');
+        swipeContainer.className = 'swipe-container';
+        
         const card = document.createElement('div');
-        card.className = 'bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer';
+        card.className = 'swipe-content bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer';
         card.onclick = () => {
-          if (linkUrl) {
+          if (linkUrl && !card.classList.contains('swiped')) {
             window.open(linkUrl, '_blank');
           }
         };
@@ -1294,11 +1666,56 @@
         }
 
         card.appendChild(contentDiv);
-        linksList.appendChild(card);
+        
+        // Create delete button
+        const deleteButton = document.createElement('div');
+        deleteButton.className = 'swipe-delete';
+        deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+        deleteButton.onclick = (e) => {
+          e.stopPropagation();
+          deleteResource(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex, linkIndex, swipeContainer);
+        };
+        
+        swipeContainer.appendChild(card);
+        swipeContainer.appendChild(deleteButton);
+        
+        // Add swipe functionality
+        addSwipeHandlers(card, swipeContainer);
+        
+        linksList.appendChild(swipeContainer);
       });
+      
+      // Add "+ Resource" button at the bottom
+      if (currentTaskInfo) {
+        const addResourceButton = document.createElement('button');
+        addResourceButton.className = 'add-button w-full mt-4';
+        addResourceButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Resource</span>';
+        addResourceButton.onclick = () => {
+          if (currentTaskInfo) {
+            showAddResourceDialog(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex);
+          }
+        };
+        linksList.appendChild(addResourceButton);
+      }
       
       // Open drawer on mobile
       openDrawer();
+    }
+    
+    // Delete resource from task
+    function deleteResource(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, swipeContainer) {
+      const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+      if (task.links && task.links[linkIndex]) {
+        task.links.splice(linkIndex, 1);
+        saveProgress();
+        swipeContainer.remove();
+        
+        // Refresh the links display
+        const taskRow = document.querySelector(`[data-task-id="${getTaskId(mainKey, phaseKey, subSectionKey, taskIndex)}"]`)?.closest('.swipe-content');
+        if (taskRow) {
+          showTaskLinks(task.links, task.name, taskRow);
+        }
+      }
     }
 
     // Drawer functions for mobile
@@ -1441,6 +1858,280 @@
       window.open('https://forms.gle/zCZ1LTBNgAjFC3zx6', '_blank');
     }
 
+    // Add new phase
+    function addNewPhase(mainKey) {
+      const newPhaseKey = `New Phase ${Object.keys(checklistData[mainKey]).length + 1}`;
+      checklistData[mainKey][newPhaseKey] = {};
+      saveProgress();
+      renderChecklist();
+    }
+
+    // Add new category/sub-section
+    function addNewCategory(mainKey, phaseKey, contentDiv) {
+      const phase = checklistData[mainKey][phaseKey];
+      const categoryCount = Object.keys(phase).length;
+      const newCategoryKey = `New Category ${categoryCount + 1}`;
+      phase[newCategoryKey] = { tasks: [] };
+      saveProgress();
+      
+      // Re-render just this phase's content
+      const categoryDiv = contentDiv.closest('[data-category-id]');
+      const oldContent = categoryDiv.querySelector('.category-content');
+      const newContent = document.createElement('div');
+      newContent.className = 'category-content space-y-6';
+      newContent.style.display = oldContent.style.display;
+      
+      for (const subSectionKey in phase) {
+        const subSection = phase[subSectionKey];
+        const subSectionElement = createSubSectionElement(subSectionKey, subSection, mainKey, phaseKey);
+        newContent.appendChild(subSectionElement);
+      }
+      
+      // Add "+ Category" button
+      const addCategoryButton = document.createElement('button');
+      addCategoryButton.className = 'add-button w-full';
+      addCategoryButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Category</span>';
+      addCategoryButton.onclick = () => addNewCategory(mainKey, phaseKey, newContent);
+      newContent.appendChild(addCategoryButton);
+      
+      oldContent.replaceWith(newContent);
+      updateCategoryProgress(phaseKey);
+    }
+
+    // Show dialog to add new task
+    function showAddTaskDialog(mainKey, phaseKey, subSectionKey, tasksContainer, subSectionDiv) {
+      const overlay = document.createElement('div');
+      overlay.className = 'dialog-overlay';
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+        }
+      };
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'dialog-content';
+      dialog.onclick = (e) => e.stopPropagation();
+      
+      dialog.innerHTML = `
+        <div class="dialog-header">
+          <h3 class="dialog-title">Add New Task</h3>
+          <button class="dialog-close" id="dialog-close-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form id="add-task-form">
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="task-name">Task Name *</label>
+            <input type="text" id="task-name" class="dialog-input" required placeholder="Enter task name">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="task-description">Description (optional)</label>
+            <textarea id="task-description" class="dialog-textarea" placeholder="Enter task description"></textarea>
+          </div>
+          <div class="dialog-actions">
+            <button type="button" class="btn-secondary" id="dialog-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Add Task</button>
+          </div>
+        </form>
+      `;
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      
+      // Wire up close and cancel buttons
+      const closeBtn = dialog.querySelector('#dialog-close-btn');
+      const cancelBtn = dialog.querySelector('#dialog-cancel-btn');
+      const closeDialog = () => overlay.remove();
+      if (closeBtn) closeBtn.onclick = closeDialog;
+      if (cancelBtn) cancelBtn.onclick = closeDialog;
+      
+      const form = dialog.querySelector('#add-task-form');
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const taskName = dialog.querySelector('#task-name').value.trim();
+        const taskDescription = dialog.querySelector('#task-description').value.trim();
+        
+        if (taskName) {
+          try {
+            addNewTask(mainKey, phaseKey, subSectionKey, taskName, taskDescription, tasksContainer, subSectionDiv);
+            overlay.remove();
+          } catch (error) {
+            console.error('Error adding task:', error);
+            alert('Error adding task: ' + error.message);
+          }
+        } else {
+          alert('Please enter a task name');
+        }
+      };
+      
+      dialog.querySelector('#task-name').focus();
+    }
+
+    // Add new task
+    function addNewTask(mainKey, phaseKey, subSectionKey, taskName, taskDescription, tasksContainer, subSectionDiv) {
+      // Validate inputs
+      if (!checklistData || !checklistData[mainKey]) {
+        console.error('Invalid mainKey:', mainKey);
+        throw new Error('Invalid checklist data structure');
+      }
+      
+      // Ensure phase exists
+      if (!checklistData[mainKey][phaseKey]) {
+        console.log('Creating missing phase:', phaseKey);
+        checklistData[mainKey][phaseKey] = {};
+      }
+      
+      // Ensure sub-section exists
+      if (!checklistData[mainKey][phaseKey][subSectionKey]) {
+        console.log('Creating missing sub-section:', subSectionKey);
+        checklistData[mainKey][phaseKey][subSectionKey] = { tasks: [] };
+      }
+      
+      const subSection = checklistData[mainKey][phaseKey][subSectionKey];
+      if (!subSection) {
+        console.error('Sub-section is null:', subSectionKey);
+        throw new Error('Sub-section does not exist');
+      }
+      
+      if (!subSection.tasks) {
+        subSection.tasks = [];
+      }
+      
+      const newTask = {
+        name: taskName,
+        description: taskDescription || '',
+        links: []
+      };
+      
+      subSection.tasks.push(newTask);
+      const taskIndex = subSection.tasks.length - 1;
+      
+      // Remove the "+ Task" button temporarily
+      const addButton = tasksContainer.querySelector('.add-button');
+      if (addButton) {
+        addButton.remove();
+      }
+      
+      // Add the new task row
+      const taskRow = createTaskRow(newTask, mainKey, phaseKey, subSectionKey, taskIndex);
+      tasksContainer.appendChild(taskRow);
+      
+      // Re-add the "+ Task" button
+      const newAddButton = document.createElement('button');
+      newAddButton.className = 'add-button w-full';
+      newAddButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Task</span>';
+      newAddButton.onclick = () => showAddTaskDialog(mainKey, phaseKey, subSectionKey, tasksContainer, subSectionDiv);
+      tasksContainer.appendChild(newAddButton);
+      
+      saveProgress();
+      updateOverallProgress();
+      updateCategoryProgress(phaseKey);
+    }
+
+    // Show dialog to add new resource
+    function showAddResourceDialog(mainKey, phaseKey, subSectionKey, taskIndex) {
+      const overlay = document.createElement('div');
+      overlay.className = 'dialog-overlay';
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.remove();
+        }
+      };
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'dialog-content';
+      dialog.onclick = (e) => e.stopPropagation();
+      
+      dialog.innerHTML = `
+        <div class="dialog-header">
+          <h3 class="dialog-title">Add New Resource</h3>
+          <button class="dialog-close" id="dialog-close-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form id="add-resource-form">
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="resource-title">Title *</label>
+            <input type="text" id="resource-title" class="dialog-input" required placeholder="Enter resource title">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="resource-url">URL *</label>
+            <input type="url" id="resource-url" class="dialog-input" required placeholder="https://example.com">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="resource-image">Image URL (optional)</label>
+            <input type="url" id="resource-image" class="dialog-input" placeholder="https://example.com/image.jpg">
+          </div>
+          <div class="dialog-form-group">
+            <label class="dialog-label" for="resource-tags">Tags (comma-separated, optional)</label>
+            <input type="text" id="resource-tags" class="dialog-input" placeholder="blog, video, official">
+          </div>
+          <div class="dialog-actions">
+            <button type="button" class="btn-secondary" id="dialog-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Add Resource</button>
+          </div>
+        </form>
+      `;
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      
+      // Wire up close and cancel buttons
+      const closeBtn = dialog.querySelector('#dialog-close-btn');
+      const cancelBtn = dialog.querySelector('#dialog-cancel-btn');
+      const closeDialog = () => overlay.remove();
+      if (closeBtn) closeBtn.onclick = closeDialog;
+      if (cancelBtn) cancelBtn.onclick = closeDialog;
+      
+      const form = dialog.querySelector('#add-resource-form');
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const title = dialog.querySelector('#resource-title').value.trim();
+        const url = dialog.querySelector('#resource-url').value.trim();
+        const image = dialog.querySelector('#resource-image').value.trim();
+        const tagsStr = dialog.querySelector('#resource-tags').value.trim();
+        const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t) : [];
+        
+        if (title && url) {
+          try {
+            addNewResource(mainKey, phaseKey, subSectionKey, taskIndex, title, url, image, tags);
+            overlay.remove();
+            // Refresh the links display
+            const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+            const taskRow = document.querySelector(`[data-task-id="${getTaskId(mainKey, phaseKey, subSectionKey, taskIndex)}"]`)?.closest('.swipe-content');
+            if (taskRow) {
+              showTaskLinks(task.links, task.name, taskRow);
+            }
+          } catch (error) {
+            console.error('Error adding resource:', error);
+            alert('Error adding resource: ' + error.message);
+          }
+        } else {
+          alert('Please enter both title and URL');
+        }
+      };
+      
+      dialog.querySelector('#resource-title').focus();
+    }
+
+    // Add new resource to task
+    function addNewResource(mainKey, phaseKey, subSectionKey, taskIndex, title, url, image, tags) {
+      const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+      if (!task.links) {
+        task.links = [];
+      }
+      
+      const newResource = {
+        title: title,
+        link_url: url,
+        image_url: image || '',
+        tags: tags || []
+      };
+      
+      task.links.push(newResource);
+      saveProgress();
+    }
+
     // Wire up Overall Progress swipe and refresh
     function wireUpOverallProgressSwipe() {
       const progressContent = document.getElementById('overall-progress-content');
@@ -1518,7 +2209,7 @@
       }, true);
       swipeCloseHandlerAdded = true;
     }
-
+    
     // Initialize on page load
     init();
     
