@@ -118,6 +118,44 @@
         max-height: calc(100vh - 8rem);
       }
     }
+    /* Swipe to delete container */
+    .swipe-container {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+    }
+    .swipe-content {
+      position: relative;
+      width: 100%;
+      transition: transform 0.3s ease-out;
+      background-color: inherit;
+    }
+    .swipe-content.swiped {
+      transform: translateX(-80px);
+    }
+    .swipe-delete {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background-color: #ef4444;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .swipe-content.swiped ~ .swipe-delete {
+      display: flex;
+    }
+    .swipe-delete:hover {
+      background-color: #dc2626;
+    }
+    .swipe-delete .material-symbols-outlined {
+      color: white;
+      font-size: 24px;
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
@@ -219,6 +257,7 @@
     // Checklist state management
     let checklistData = null;
     let completedTasks = new Set();
+    let swipeCloseHandlerAdded = false;
     
     // Default URL for checklist JSON
     const DEFAULT_CHECKLIST_URL = 'https://gist.githubusercontent.com/jalakoo/44ba89b8f60fc97400c9750112e5ba7c/raw/move2japan_from_us.json';
@@ -599,14 +638,27 @@
       const isCompleted = isTaskCompleted(taskId);
       const hasLinks = task.links && task.links.length > 0;
 
+      // Create swipe container
+      const swipeContainer = document.createElement('div');
+      swipeContainer.className = 'swipe-container';
+
+      // Create swipe content (the actual row)
       const row = document.createElement('div');
-      row.className = `flex items-center justify-between p-4 transition-colors duration-150 ${hasLinks ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer' : ''}`;
+      row.className = `swipe-content flex items-center justify-between p-4 transition-colors duration-150 ${hasLinks ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer' : ''}`;
+      row.setAttribute('data-task-id', taskId);
+      row.setAttribute('data-main-key', mainKey);
+      row.setAttribute('data-phase-key', phaseKey);
+      row.setAttribute('data-subsection-key', subSectionKey);
+      row.setAttribute('data-task-index', taskIndex);
+      if (subtaskIndex !== null) {
+        row.setAttribute('data-subtask-index', subtaskIndex);
+      }
       
       // Make entire row clickable (except checkbox) to show links
       if (hasLinks) {
         row.onclick = (e) => {
-          // Don't trigger if clicking checkbox or label (for editing)
-          if (e.target.type === 'checkbox' || e.target.contentEditable === 'true') {
+          // Don't trigger if clicking checkbox, label (for editing), or if swiped
+          if (e.target.type === 'checkbox' || e.target.contentEditable === 'true' || row.classList.contains('swiped')) {
             return;
           }
           showTaskLinks(task.links, task.name, row);
@@ -702,7 +754,22 @@
         row.appendChild(rightIcon);
       }
 
-      return row;
+      // Create delete button
+      const deleteButton = document.createElement('div');
+      deleteButton.className = 'swipe-delete';
+      deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+      deleteButton.onclick = (e) => {
+        e.stopPropagation();
+        deleteTask(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex, swipeContainer);
+      };
+
+      swipeContainer.appendChild(row);
+      swipeContainer.appendChild(deleteButton);
+
+      // Add swipe functionality
+      addSwipeHandlers(row, swipeContainer);
+
+      return swipeContainer;
     }
 
     // Update task row appearance
@@ -717,6 +784,164 @@
           label.classList.add('strikethrough');
         } else {
           label.classList.remove('strikethrough');
+        }
+      }
+    }
+
+    // Add swipe handlers for touch and mouse events
+    function addSwipeHandlers(row, swipeContainer) {
+      let startX = 0;
+      let currentX = 0;
+      let isDragging = false;
+      let hasSwiped = false;
+
+      // Touch events
+      row.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+        hasSwiped = false;
+      });
+
+      row.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentX = e.touches[0].clientX;
+        const diffX = startX - currentX;
+        
+        // Only allow swiping left (positive diffX)
+        if (diffX > 0) {
+          e.preventDefault();
+          const translateX = Math.min(diffX, 80);
+          row.style.transform = `translateX(-${translateX}px)`;
+          hasSwiped = translateX > 40; // Threshold for revealing delete button
+        }
+      });
+
+      row.addEventListener('touchend', () => {
+        if (isDragging) {
+          if (hasSwiped) {
+            row.classList.add('swiped');
+            row.style.transform = 'translateX(-80px)';
+          } else {
+            row.style.transform = 'translateX(0)';
+          }
+          isDragging = false;
+        }
+      });
+
+      // Mouse events (for desktop)
+      row.addEventListener('mousedown', (e) => {
+        // Only allow swipe on right side of row or if already swiped
+        const rect = row.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const rowWidth = rect.width;
+        
+        // Allow swipe if clicking on right 30% of row or if already swiped
+        if (clickX > rowWidth * 0.7 || row.classList.contains('swiped')) {
+          startX = e.clientX;
+          isDragging = true;
+          hasSwiped = row.classList.contains('swiped');
+          row.style.transition = 'none';
+        }
+      });
+
+      row.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        currentX = e.clientX;
+        const diffX = startX - currentX;
+        
+        // Only allow swiping left (positive diffX)
+        if (diffX > 0) {
+          const translateX = Math.min(diffX, 80);
+          row.style.transform = `translateX(-${translateX}px)`;
+          hasSwiped = translateX > 40;
+        }
+      });
+
+      row.addEventListener('mouseup', () => {
+        if (isDragging) {
+          row.style.transition = 'transform 0.3s ease-out';
+          if (hasSwiped) {
+            row.classList.add('swiped');
+            row.style.transform = 'translateX(-80px)';
+          } else {
+            row.style.transform = 'translateX(0)';
+            row.classList.remove('swiped');
+          }
+          isDragging = false;
+        }
+      });
+
+      row.addEventListener('mouseleave', () => {
+        if (isDragging) {
+          row.style.transition = 'transform 0.3s ease-out';
+          if (hasSwiped) {
+            row.classList.add('swiped');
+            row.style.transform = 'translateX(-80px)';
+          } else {
+            row.style.transform = 'translateX(0)';
+            row.classList.remove('swiped');
+          }
+          isDragging = false;
+        }
+      });
+
+    }
+
+    // Delete task from checklist
+    function deleteTask(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex, swipeContainer) {
+      if (!checklistData || !checklistData[mainKey] || !checklistData[mainKey][phaseKey] || !checklistData[mainKey][phaseKey][subSectionKey]) {
+        console.error('Invalid task data structure');
+        return;
+      }
+
+      const subSection = checklistData[mainKey][phaseKey][subSectionKey];
+      
+      if (subtaskIndex !== null) {
+        // Delete a subtask
+        if (subSection.tasks && subSection.tasks[taskIndex] && subSection.tasks[taskIndex].subtasks) {
+          const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+          completedTasks.delete(subtaskId);
+          subSection.tasks[taskIndex].subtasks.splice(subtaskIndex, 1);
+          
+          // If no subtasks left, remove the subtasks array
+          if (subSection.tasks[taskIndex].subtasks.length === 0) {
+            delete subSection.tasks[taskIndex].subtasks;
+          }
+        }
+      } else {
+        // Delete a main task
+        if (subSection.tasks) {
+          const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+          completedTasks.delete(taskId);
+          
+          // Also delete all subtask IDs if they exist
+          if (subSection.tasks[taskIndex] && subSection.tasks[taskIndex].subtasks) {
+            subSection.tasks[taskIndex].subtasks.forEach((_, subtaskIdx) => {
+              const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIdx);
+              completedTasks.delete(subtaskId);
+            });
+          }
+          
+          subSection.tasks.splice(taskIndex, 1);
+        }
+      }
+
+      // Save updated data
+      saveProgress();
+      
+      // Remove the swipe container from DOM
+      swipeContainer.remove();
+      
+      // Update progress
+      updateOverallProgress();
+      updateCategoryProgress(phaseKey);
+      
+      // Update phase checkbox state
+      const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
+      if (categoryDiv) {
+        const phaseCheckbox = categoryDiv.querySelector('input[type="checkbox"]');
+        if (phaseCheckbox) {
+          updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
         }
       }
     }
@@ -1060,6 +1285,22 @@
       });
     }
     
+    // Global handler to close swiped rows when clicking outside (only add once)
+    if (!swipeCloseHandlerAdded) {
+      document.addEventListener('click', (e) => {
+        // Find all swiped rows
+        const swipedRows = document.querySelectorAll('.swipe-content.swiped');
+        swipedRows.forEach(swipedRow => {
+          const swipeContainer = swipedRow.closest('.swipe-container');
+          if (swipeContainer && !swipeContainer.contains(e.target)) {
+            swipedRow.classList.remove('swiped');
+            swipedRow.style.transform = 'translateX(0)';
+          }
+        });
+      }, true);
+      swipeCloseHandlerAdded = true;
+    }
+
     // Initialize on page load
     init();
     
