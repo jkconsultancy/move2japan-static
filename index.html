@@ -465,6 +465,28 @@
     .dark .email-modal-title {
       color: white;
     }
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-weight: 600;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    .auth-tab.active {
+      color: #0ea5e9;
+      border-bottom-color: #0ea5e9;
+    }
+    .auth-tab:hover {
+      color: #0ea5e9;
+    }
+    .auth-form {
+      display: block;
+    }
+    }
     .email-modal-subtitle {
       font-size: 0.875rem;
       color: #64748b;
@@ -786,9 +808,11 @@
       color: #94a3b8;
     }
   </style>
+  <!-- Configuration - loaded from config.js (generated at build time) -->
+  <script src="config.js"></script>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
-  <!-- Email Login Modal -->
+  <!-- Email Modal (MailerLite - for email collection only) -->
   <div id="email-modal" class="email-modal-overlay" style="display: none;">
     <div class="email-modal-content">
       <div id="mlb2-33402369" class="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-33402369">
@@ -834,6 +858,66 @@
     </div>
   </div>
 
+  <!-- Auth Modal (Supabase Signup/Login) -->
+  <div id="auth-modal" class="email-modal-overlay" style="display: none;">
+    <div class="email-modal-content">
+      <div style="max-width: 400px; width: 100%;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h4 style="font-size: 24px; font-weight: bold; margin-bottom: 8px; color: #1e293b;">Save Your Progress</h4>
+          <p style="color: #64748b;">Create an account to sync your progress across devices</p>
+        </div>
+        
+        <!-- Tabs -->
+        <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0;">
+          <button id="auth-tab-signup" class="auth-tab active" onclick="switchAuthTab('signup')">Sign Up</button>
+          <button id="auth-tab-login" class="auth-tab" onclick="switchAuthTab('login')">Log In</button>
+        </div>
+        
+        <!-- Signup Form -->
+        <div id="auth-form-signup" class="auth-form">
+          <form id="signup-form" onsubmit="handleSignupSubmit(event)">
+            <div style="margin-bottom: 16px;">
+              <input type="email" id="signup-email" class="email-input" placeholder="your.email@example.com" autocomplete="email" required>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <input type="password" id="signup-password" class="email-input" placeholder="Password (min 6 characters)" autocomplete="new-password" required minlength="6">
+            </div>
+            <div style="margin-bottom: 16px;">
+              <button type="submit" class="primary" style="width: 100%; padding: 12px; background: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Sign Up
+              </button>
+            </div>
+            <div id="signup-error" style="color: #ef4444; font-size: 14px; margin-top: 8px; display: none;"></div>
+          </form>
+        </div>
+        
+        <!-- Login Form -->
+        <div id="auth-form-login" class="auth-form" style="display: none;">
+          <form id="login-form" onsubmit="handleLoginSubmit(event)">
+            <div style="margin-bottom: 16px;">
+              <input type="email" id="login-email" class="email-input" placeholder="your.email@example.com" autocomplete="email" required>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <input type="password" id="login-password" class="email-input" placeholder="Password" autocomplete="current-password" required>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <button type="submit" class="primary" style="width: 100%; padding: 12px; background: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Log In
+              </button>
+            </div>
+            <div id="login-error" style="color: #ef4444; font-size: 14px; margin-top: 8px; display: none;"></div>
+          </form>
+        </div>
+        
+        <div style="text-align: center; margin-top: 16px;">
+          <button onclick="closeAuthModal()" style="background: none; border: none; color: #64748b; cursor: pointer; text-decoration: underline;">
+            Continue without account
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="min-h-screen">
     <!-- Header -->
     <header class="relative bg-cover bg-center h-[50vh] min-h-[300px] md:h-[400px]" style="background-image: url('https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');" role="img" aria-label="Beautiful landscape view of Japan with mountains and traditional architecture">
@@ -841,7 +925,9 @@
       <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
         <div class="flex justify-between items-start pt-6">
           <div class="text-white font-bold text-xl">🇯🇵</div>
-          <a class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="javascript:void(0)" onclick="handleSignup()">Signup</a>
+          <div id="auth-button-container">
+            <a id="auth-button" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="javascript:void(0)" onclick="openAuthModal()">Sign Up / Log In</a>
+          </div>
         </div>
         <div class="flex flex-col items-center justify-center h-full text-center text-white pb-16">
           <h1 class="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">Moving to Japan Checklist</h1>
@@ -906,23 +992,383 @@
   </div>
 
   <script>
-    // Email storage management
-    const EMAIL_STORAGE_KEY = 'move2japan_user_email';
+    // Backend API configuration - loaded from config.js (generated at build time from environment variables)
+    const BACKEND_API_URL = window.APP_CONFIG?.BACKEND_API_URL || 'http://localhost:8000';
     
-    // Check if user has already provided email
-    function getUserEmail() {
-      return localStorage.getItem(EMAIL_STORAGE_KEY);
+    // Authentication state
+    const AUTH_TOKEN_KEY = 'move2japan_auth_token';
+    const USER_INFO_KEY = 'move2japan_user_info';
+    let currentUser = null;
+    let authToken = null;
+    
+    // Anonymous user ID storage (using localStorage to persist across sessions)
+    const ANONYMOUS_USER_ID_KEY = 'move2japan_anonymous_user_id';
+    
+    // Initialize auth state
+    function initAuthState() {
+      authToken = localStorage.getItem(AUTH_TOKEN_KEY);
+      const userInfo = localStorage.getItem(USER_INFO_KEY);
+      if (userInfo) {
+        try {
+          currentUser = JSON.parse(userInfo);
+        } catch (e) {
+          console.error('Error parsing user info:', e);
+          currentUser = null;
+        }
+      }
+      updateAuthButton();
     }
     
-    // Save user email
-    function saveUserEmail(email) {
-      localStorage.setItem(EMAIL_STORAGE_KEY, email);
+    // Update auth button based on login state
+    function updateAuthButton() {
+      const authButton = document.getElementById('auth-button');
+      const authContainer = document.getElementById('auth-button-container');
+      if (authButton && authContainer) {
+        if (currentUser) {
+          authButton.textContent = `${currentUser.email} (Logout)`;
+          authButton.onclick = handleLogout;
+        } else {
+          authButton.textContent = 'Sign Up / Log In';
+          authButton.onclick = openAuthModal;
+        }
+      }
     }
     
-    // Show email modal if email not found
+    // Get anonymous user ID from storage
+    function getAnonymousUserId() {
+      return localStorage.getItem(ANONYMOUS_USER_ID_KEY);
+    }
+    
+    // Save anonymous user ID
+    function saveAnonymousUserId(userId) {
+      localStorage.setItem(ANONYMOUS_USER_ID_KEY, userId);
+      console.log('Saved Anonymous User ID to localStorage:', userId);
+    }
+    
+    // Get or create anonymous user ID from backend
+    async function getOrCreateAnonymousUserId() {
+      // Check if we already have one
+      const existingId = getAnonymousUserId();
+      if (existingId) {
+        console.log('Found existing Anonymous User ID:', existingId);
+        return existingId;
+      }
+      
+      console.log('No existing Anonymous User ID found, creating new one...');
+      try {
+        const response = await fetch(`${BACKEND_API_URL}/api/anonymous-user`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Backend response:', data);
+          const anonymousUserId = data.anonymous_user_id;
+          if (anonymousUserId) {
+            saveAnonymousUserId(anonymousUserId);
+            console.log('Successfully created and saved Anonymous User ID:', anonymousUserId);
+            return anonymousUserId;
+          } else {
+            console.error('Backend returned no anonymous_user_id in response');
+          }
+        } else {
+          let errorText;
+          try {
+            const errorData = await response.json();
+            errorText = errorData.detail || JSON.stringify(errorData);
+          } catch {
+            errorText = await response.text();
+          }
+          console.error('Failed to get anonymous user ID:', response.status, response.statusText);
+          console.error('Error details:', errorText);
+        }
+      } catch (error) {
+        console.error('Error getting anonymous user ID:', error);
+      }
+      
+      return null;
+    }
+    
+    // Auth modal functions
+    function openAuthModal() {
+      const modal = document.getElementById('auth-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        switchAuthTab('signup');
+      }
+    }
+    
+    function closeAuthModal() {
+      const modal = document.getElementById('auth-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+    
+    function switchAuthTab(tab) {
+      const signupTab = document.getElementById('auth-tab-signup');
+      const loginTab = document.getElementById('auth-tab-login');
+      const signupForm = document.getElementById('auth-form-signup');
+      const loginForm = document.getElementById('auth-form-login');
+      
+      if (tab === 'signup') {
+        signupTab.classList.add('active');
+        loginTab.classList.remove('active');
+        signupForm.style.display = 'block';
+        loginForm.style.display = 'none';
+      } else {
+        loginTab.classList.add('active');
+        signupTab.classList.remove('active');
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+      }
+    }
+    
+    async function handleSignupSubmit(event) {
+      event.preventDefault();
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      const errorDiv = document.getElementById('signup-error');
+      
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      try {
+        const anonymousUserId = getAnonymousUserId();
+        
+        // Get local data before signup to migrate it
+        const localData = getCookie(COOKIE_NAME);
+        const localChecklistData = localData?.checklistData || checklistData;
+        const localCompletedTasks = localData?.completedTasks || Array.from(completedTasks);
+        
+        const response = await fetch(`${BACKEND_API_URL}/api/auth/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            anonymous_user_id: anonymousUserId
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Save auth token and user info
+          authToken = data.access_token;
+          currentUser = data.user;
+          localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+          localStorage.setItem(USER_INFO_KEY, JSON.stringify(currentUser));
+          
+          updateAuthButton();
+          closeAuthModal();
+          
+          // Migrate local data to Supabase
+          if (localChecklistData && Object.keys(localChecklistData).length > 0) {
+            await saveUserSiteData(localChecklistData, localCompletedTasks);
+            console.log('Migrated local data to Supabase');
+          } else {
+            // Load user's saved data from Supabase (if any)
+            await loadUserSiteData();
+          }
+          
+          alert('Account created successfully! Your local progress has been saved to the cloud.');
+        } else {
+          errorDiv.textContent = data.detail || 'Signup failed. Please try again.';
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Signup error:', error);
+        errorDiv.textContent = 'An error occurred. Please try again.';
+        errorDiv.style.display = 'block';
+      }
+    }
+    
+    async function handleLoginSubmit(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const errorDiv = document.getElementById('login-error');
+      
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      try {
+        // Get local data before login to potentially merge it
+        const localData = getCookie(COOKIE_NAME);
+        const localChecklistData = localData?.checklistData;
+        const localCompletedTasks = localData?.completedTasks || [];
+        
+        const response = await fetch(`${BACKEND_API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Save auth token and user info
+          authToken = data.access_token;
+          currentUser = data.user;
+          localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+          localStorage.setItem(USER_INFO_KEY, JSON.stringify(currentUser));
+          
+          updateAuthButton();
+          closeAuthModal();
+          
+          // Load user's saved data from Supabase
+          const serverData = await loadUserSiteData();
+          
+          // If we have local data and no server data, migrate local to server
+          if (localChecklistData && Object.keys(localChecklistData).length > 0 && 
+              (!serverData || !serverData.checklist_data || Object.keys(serverData.checklist_data).length === 0)) {
+            await saveUserSiteData(localChecklistData, localCompletedTasks);
+            console.log('Migrated local data to Supabase on login');
+            alert('Logged in successfully! Your local progress has been saved to the cloud.');
+          } else if (serverData && serverData.checklist_data && Object.keys(serverData.checklist_data).length > 0) {
+            alert('Logged in successfully! Your saved progress has been loaded.');
+          } else {
+            alert('Logged in successfully!');
+          }
+        } else {
+          errorDiv.textContent = data.detail || 'Login failed. Please check your credentials.';
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        errorDiv.textContent = 'An error occurred. Please try again.';
+        errorDiv.style.display = 'block';
+      }
+    }
+    
+    async function handleLogout() {
+      try {
+        if (authToken) {
+          await fetch(`${BACKEND_API_URL}/api/auth/logout`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json',
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+      
+      // Clear auth state
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(USER_INFO_KEY);
+      
+      updateAuthButton();
+      
+      // Reload page data from cookie
+      const savedData = getCookie(COOKIE_NAME);
+      if (savedData && savedData.checklistData) {
+        checklistData = savedData.checklistData;
+        completedTasks = new Set(savedData.completedTasks || []);
+        renderChecklist();
+        updateOverallProgress();
+      }
+    }
+    
+    // Save user's site data to backend
+    async function saveUserSiteData(checklistDataToSave, completedTasksArray) {
+      if (!authToken || !currentUser) {
+        return false;
+      }
+      
+      try {
+        const response = await fetch(`${BACKEND_API_URL}/api/site-data`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            checklist_data: checklistDataToSave,
+            completed_tasks: completedTasksArray
+          })
+        });
+        
+        if (response.ok) {
+          console.log('Saved user site data to backend');
+          return true;
+        } else {
+          console.warn('Failed to save user site data to backend:', response.status);
+          return false;
+        }
+      } catch (error) {
+        console.error('Error saving user site data:', error);
+        return false;
+      }
+    }
+    
+    // Load user's saved site data from backend
+    async function loadUserSiteData() {
+      if (!authToken || !currentUser) {
+        return null;
+      }
+      
+      try {
+        const response = await fetch(`${BACKEND_API_URL}/api/site-data`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.checklist_data && Object.keys(data.checklist_data).length > 0) {
+            checklistData = data.checklist_data;
+            completedTasks = new Set(data.completed_tasks || []);
+            renderChecklist();
+            updateOverallProgress();
+            console.log('Loaded user site data from backend');
+            return data;
+          }
+        }
+        return null;
+      } catch (error) {
+        console.error('Error loading user site data:', error);
+        return null;
+      }
+    }
+    
+    // MailerLite success callback - called when email is submitted
+    function ml_webform_success_33402369() {
+      // Get anonymous user ID after successful email submission to MailerLite
+      getOrCreateAnonymousUserId().then(() => {
+        // Close modal after a short delay
+        setTimeout(() => {
+          const modal = document.getElementById('email-modal');
+          if (modal) {
+            modal.style.display = 'none';
+          }
+        }, 600);
+      });
+    }
+    
+    // Show email modal if anonymous user ID not found
     function checkAndShowEmailModal() {
-      const email = getUserEmail();
-      if (!email) {
+      const anonymousUserId = getAnonymousUserId();
+      if (!anonymousUserId) {
         const modal = document.getElementById('email-modal');
         if (modal) {
           modal.style.display = 'flex';
@@ -937,37 +1383,31 @@
       }
     }
     
-    // MailerLite success callback
-    function ml_webform_success_33402369() {
-      // Email already saved on submit, just close modal quickly
-      setTimeout(() => {
-        const modal = document.getElementById('email-modal');
-        if (modal) {
-          modal.style.display = 'none';
-        }
-      }, 600); // Quick close after showing success message
-    }
-    
     // Initialize email modal
     function initEmailModal() {
-      // Intercept form submission for immediate local storage save
-      const mailerLiteForm = document.querySelector('#mlb2-33402369 form.ml-block-form');
-      if (mailerLiteForm) {
-        mailerLiteForm.addEventListener('submit', function(e) {
-          // Save email immediately (optimistic update)
-          const emailInput = document.querySelector('#mlb2-33402369 input[name="fields[email]"]');
-          if (emailInput) {
-            const email = emailInput.value.trim().toLowerCase();
-            if (email) {
-              saveUserEmail(email);
-            }
-          }
-        }, { once: true }); // Only listen once
+      // Check if we should show the email modal FIRST (before creating anonymous user ID)
+      const anonymousUserId = getAnonymousUserId();
+      
+      // If no anonymous user ID exists, show the email modal
+      if (!anonymousUserId) {
+        checkAndShowEmailModal();
       }
       
-      // Check on page load
-      checkAndShowEmailModal();
+      // Intercept form submission to create anonymous user ID when email is submitted
+      const mailerLiteForm = document.querySelector('#mlb2-33402369 form.ml-block-form');
+      if (mailerLiteForm) {
+        mailerLiteForm.addEventListener('submit', async function(e) {
+          // Create anonymous user ID when form is submitted to MailerLite
+          // This ID will be used for local storage
+          await getOrCreateAnonymousUserId();
+        }, { once: true }); // Only listen once
+      }
     }
+    
+    // Note: We do NOT create anonymous user ID on page load
+    // It should only be created when:
+    // 1. User submits email to MailerLite (via initEmailModal)
+    // 2. User interacts with the site and we need to track them
     
     // Cookie management
     const COOKIE_NAME = 'japan_checklist_data';
@@ -1057,10 +1497,24 @@
 
     // Initialize app
     async function init() {
-      // Check if user has visited before and has saved progress
+      // Initialize auth state
+      initAuthState();
+      
+      // Check if user has visited before and has saved progress (from cookie)
       const savedData = getCookie(COOKIE_NAME);
       
-      // Restore saved progress first (before loading new data)
+      // If user is logged in, try to load their data from backend first
+      if (authToken && currentUser) {
+        const serverData = await loadUserSiteData();
+        // If we got data from server, use it (it's already loaded in loadUserSiteData)
+        if (serverData && serverData.checklist_data && Object.keys(serverData.checklist_data).length > 0) {
+          // Data already loaded and rendered by loadUserSiteData
+          wireUpOverallProgressSwipe();
+          return;
+        }
+      }
+      
+      // For anonymous users or if no server data, use local cookie data
       if (savedData && savedData.completedTasks && Array.isArray(savedData.completedTasks)) {
         completedTasks = new Set(savedData.completedTasks);
         console.log('Restored', completedTasks.size, 'completed tasks from cookie');
@@ -1265,18 +1719,32 @@
       }
     }
 
-    // Save progress to cookie
-    function saveProgress() {
+    // Save progress to cookie and/or backend
+    async function saveProgress() {
       if (!checklistData) {
         console.warn('Cannot save progress: checklistData is not loaded');
         return;
       }
+      
+      // If no anonymous user ID exists yet, create one when user interacts with the site
+      // This handles the case where user interacts before submitting email
+      if (!getAnonymousUserId()) {
+        await getOrCreateAnonymousUserId();
+      }
+      
       const tasksArray = Array.from(completedTasks);
+      
+      // Always save to cookie for local persistence (works for anonymous users)
       setCookie(COOKIE_NAME, {
         checklistData: checklistData,
         completedTasks: tasksArray
       }, COOKIE_EXPIRY_DAYS);
       console.log('Saved', tasksArray.length, 'completed tasks to cookie');
+      
+      // If user is logged in, also save to backend (Supabase)
+      if (authToken && currentUser) {
+        await saveUserSiteData(checklistData, tasksArray);
+      }
     }
 
     // Render checklist
@@ -2468,10 +2936,9 @@
       document.getElementById('overall-progress-bar').style.width = `${percent}%`;
     }
 
-    // Handle signup button click - open Google Form
+    // Legacy handleSignup - now opens auth modal
     function handleSignup() {
-      console.log('Signup button clicked - opening Google Form');
-      window.open('https://forms.gle/zCZ1LTBNgAjFC3zx6', '_blank');
+      openAuthModal();
     }
 
     // Add new phase
@@ -2888,23 +3355,17 @@
       addSwipeHandlers(progressContent, progressContainer);
     }
 
-    // Wire up signup button
+    // Wire up signup button (now auth button)
     function wireUpSignupButton() {
-      // Find signup button by text content or by being in header
-      const signupButton = Array.from(document.querySelectorAll('a')).find(a => 
-        a.textContent.trim() === 'Signup' && a.closest('header')
-      );
-      if (signupButton) {
-        console.log('Signup button found, handler function:', typeof handleSignup);
-        // Remove existing onclick to avoid double-firing, then add event listener
-        signupButton.removeAttribute('onclick');
-        signupButton.addEventListener('click', function(e) {
-          console.log('Signup button clicked via event listener');
-          e.preventDefault();
-          handleSignup();
-        });
+      // The auth button is already set up with onclick="openAuthModal()" in the HTML
+      // and is updated by updateAuthButton() based on auth state
+      // This function is kept for compatibility but doesn't need to do anything
+      const authButton = document.getElementById('auth-button');
+      if (authButton) {
+        // Button is already properly configured in HTML
+        // updateAuthButton() will handle dynamic updates based on auth state
       } else {
-        console.warn('Signup button not found!');
+        console.warn('Auth button not found!');
       }
     }
 
@@ -2949,6 +3410,34 @@
       }, true);
       swipeCloseHandlerAdded = true;
     }
+    
+    // Utility function to clear all user data (for testing)
+    // Call this from browser console: clearAllUserData()
+    window.clearAllUserData = function() {
+      // Clear all cookies
+      document.cookie.split(";").forEach(function(c) { 
+        const cookieName = c.replace(/^ +/, "").split("=")[0];
+        document.cookie = cookieName + "=;expires=" + new Date(0).toUTCString() + ";path=/";
+      });
+      
+      // Clear localStorage items
+      localStorage.removeItem('move2japan_anonymous_user_id');
+      localStorage.removeItem('move2japan_auth_token');
+      localStorage.removeItem('move2japan_user_info');
+      
+      // Clear in-memory state
+      authToken = null;
+      currentUser = null;
+      completedTasks = new Set();
+      checklistData = null;
+      
+      console.log('✅ All user data cleared! Reloading page...');
+      
+      // Reload the page to reset everything
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    };
     
     // Initialize on page load
     init();
