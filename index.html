@@ -62,6 +62,14 @@
   </script>
   
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  
+  <!-- Application Modules -->
+  <script src="/js/StateManager.js"></script>
+  <script src="/js/ChecklistDataManager.js"></script>
+  <script src="/js/DragDropManager.js"></script>
+  <script src="/js/TaskRenderer.js"></script>
+  <script src="/js/SubcategoryRenderer.js"></script>
+  <script src="/js/PhaseRenderer.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
   <script src="https://t.contentsquare.net/uxa/5947da0fdab10.js"></script>
@@ -111,6 +119,17 @@
       line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+    }
+    /* Drag and drop styles */
+    .dragging {
+      opacity: 0.5;
+    }
+    .drag-over {
+      border-top: 2px solid #0EA5E9;
+      background-color: rgba(14, 165, 233, 0.1);
+    }
+    .dark .drag-over {
+      background-color: rgba(14, 165, 233, 0.2);
     }
     /* Links container max-height for desktop */
     @media (min-width: 1024px) {
@@ -215,7 +234,7 @@
       z-index: 1000;
       display: flex;
       align-items: center;
-      justify-center;
+      justify-content: center;
       padding: 1rem;
     }
     .dialog-content {
@@ -422,9 +441,506 @@
     .dark .resource-edit-icon .material-symbols-outlined {
       color: #cbd5e1;
     }
+    /* Email login modal styles */
+    .email-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(4px);
+    }
+    .email-modal-content {
+      background-color: white;
+      border-radius: 0.75rem;
+      padding: 2rem;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .dark .email-modal-content {
+      background-color: #0f172a;
+    }
+    .email-modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .dark .email-modal-title {
+      color: white;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-weight: 600;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    .auth-tab.active {
+      color: #0ea5e9;
+      border-bottom-color: #0ea5e9;
+    }
+    .auth-tab:hover {
+      color: #0ea5e9;
+    }
+    .auth-form {
+      display: block;
+    }
+    .email-modal-subtitle {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-bottom: 1.5rem;
+    }
+    .dark .email-modal-subtitle {
+      color: #94a3b8;
+    }
+    #email-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .email-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      background-color: white;
+      color: #0f172a;
+      transition: border-color 0.2s;
+    }
+    .email-input:focus {
+      outline: none;
+      border-color: #0EA5E9;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+    .dark .email-input {
+      background-color: #1e293b;
+      border-color: #475569;
+      color: white;
+    }
+    .dark .email-input:focus {
+      border-color: #0EA5E9;
+    }
+    .email-submit-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #0EA5E9;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: 1rem;
+    }
+    .email-submit-btn:hover {
+      background-color: #0284c7;
+    }
+    .email-submit-btn:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+    .email-error {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    .email-success {
+      color: #10b981;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
   </style>
+  <!-- MailerLite Styles -->
+  <style type="text/css">@import url("https://assets.mlcdn.com/fonts.css?version=1762785");</style>
+  <style type="text/css">
+    /* LOADER */
+    .ml-form-embedSubmitLoad {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+    }
+    .g-recaptcha {
+      transform: scale(1);
+      -webkit-transform: scale(1);
+      transform-origin: 0 0;
+      -webkit-transform-origin: 0 0;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      border: 0;
+    }
+    .ml-form-embedSubmitLoad:after {
+      content: " ";
+      display: block;
+      width: 11px;
+      height: 11px;
+      margin: 1px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      border-color: #ffffff #ffffff #ffffff transparent;
+      animation: ml-form-embedSubmitLoad 1.2s linear infinite;
+    }
+    @keyframes ml-form-embedSubmitLoad {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #mlb2-33402369.ml-form-embedContainer {
+      box-sizing: border-box;
+      display: table;
+      margin: 0 auto;
+      position: static;
+      width: 100% !important;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper {
+      background-color: transparent;
+      border-width: 0px;
+      border-color: transparent;
+      border-radius: 4px;
+      border-style: solid;
+      box-sizing: border-box;
+      display: inline-block !important;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper.embedForm { 
+      max-width: 100%; 
+      width: 100%; 
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-align-center { 
+      text-align: center; 
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody {
+      padding: 0;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent {
+      text-align: left;
+      margin: 0 0 20px 0;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent h4 {
+      color: #0f172a;
+      font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+      text-align: left;
+      word-break: break-word;
+    }
+    .dark #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent h4 {
+      color: white;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p {
+      color: #64748b;
+      font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 20px;
+      margin: 0 0 10px 0;
+      text-align: left;
+    }
+    .dark #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p {
+      color: #94a3b8;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody form {
+      margin: 0;
+      width: 100%;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-formContent {
+      margin: 0 0 20px 0;
+      width: 100%;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-formContent.horozintalForm {
+      margin: 0;
+      padding: 0 0 20px 0;
+      width: 100%;
+      height: auto;
+      float: left;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow {
+      height: auto;
+      width: 100%;
+      float: left;
+      display: flex;
+      gap: 10px;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .ml-input-horizontal {
+      flex: 1;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .ml-button-horizontal {
+      flex: 0 0 auto;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .horizontal-fields {
+      width: 100%;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow {
+      margin: 0 0 10px 0;
+      width: 100%;
+    }
+    @media only screen and (max-width: 400px) {
+      #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow {
+        flex-direction: column;
+      }
+      #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .ml-input-horizontal {
+        width: 100%;
+      }
+      #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .ml-button-horizontal {
+        width: 100%;
+      }
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1;
+      border-radius: 0.5rem !important;
+      border-style: solid !important;
+      border-width: 2px !important;
+      font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+      font-size: 1rem !important;
+      height: auto;
+      line-height: 21px !important;
+      margin-bottom: 0;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      padding: 0.75rem !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      max-width: 100% !important;
+    }
+    .dark #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input {
+      background-color: #1e293b !important;
+      border-color: #475569 !important;
+      color: white !important;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input:focus {
+      outline: none;
+      border-color: #0EA5E9;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit {
+      margin: 0 0 20px 0;
+      float: left;
+      width: 100%;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button {
+      background-color: #0EA5E9 !important;
+      border: none !important;
+      border-radius: 0.5rem !important;
+      box-shadow: none !important;
+      color: #ffffff !important;
+      cursor: pointer;
+      font-family: 'Open Sans', Arial, Helvetica, sans-serif !important;
+      font-size: 1rem !important;
+      font-weight: 700 !important;
+      line-height: 21px !important;
+      height: auto;
+      padding: 0.75rem !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow button {
+      background-color: #0EA5E9 !important;
+      border: none !important;
+      border-radius: 0.5rem !important;
+      box-shadow: none !important;
+      color: #ffffff !important;
+      cursor: pointer;
+      font-family: 'Open Sans', Arial, Helvetica, sans-serif !important;
+      font-size: 1rem !important;
+      font-weight: 700 !important;
+      line-height: 21px !important;
+      margin: 0 !important;
+      padding: 0.75rem 1.5rem !important;
+      height: auto;
+      white-space: nowrap;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow button:hover {
+      background-color: #0284c7 !important;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button.loading {
+      display: none;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button:hover {
+      background-color: #0284c7 !important;
+    }
+    .ml-error input, .ml-error textarea, .ml-error select {
+      border-color: red!important;
+    }
+    .ml-error .label-description,
+    .ml-error .label-description p,
+    .ml-error .label-description p a,
+    .ml-error label:first-child {
+      color: #ff0000 !important;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-successBody {
+      display: none;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-successBody.row-success {
+      display: block;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-successContent h4 {
+      color: #10b981;
+      font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+    }
+    #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-successContent p {
+      color: #64748b;
+      font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+    .dark #mlb2-33402369.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-successContent p {
+      color: #94a3b8;
+    }
+  </style>
+  <!-- Configuration - loaded from config.js (generated at build time) -->
+  <script src="config.js"></script>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
+  <!-- Email Modal (MailerLite - for email collection only) -->
+  <div id="email-modal" class="email-modal-overlay" style="display: none;">
+    <div class="email-modal-content">
+      <div id="mlb2-33402369" class="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-33402369">
+        <div class="ml-form-align-center">
+          <div class="ml-form-embedWrapper embedForm">
+            <div class="ml-form-embedBody ml-form-embedBodyHorizontal row-form">
+              <div class="ml-form-embedContent">
+                <h4>Welcome to Move2Japan!</h4>
+                <p>Enter your email to get started!</p>
+              </div>
+              <form class="ml-block-form" action="https://assets.mailerlite.com/jsonp/1923093/forms/171195070484055534/subscribe" data-code="" method="post">
+                <div class="ml-form-formContent horozintalForm">
+                  <div class="ml-form-horizontalRow">
+                    <div class="ml-input-horizontal">
+                      <div style="width: 100%;" class="horizontal-fields">
+                        <div class="ml-field-group ml-field-email ml-validate-email ml-validate-required">
+                          <input type="email" class="form-control" data-inputmask="" name="fields[email]" placeholder="your.email@example.com" autocomplete="email" required>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ml-button-horizontal primary">
+                      <button type="submit" class="primary">Continue</button>
+                      <button disabled="disabled" style="display: none;" type="button" class="loading">
+                        <div class="ml-form-embedSubmitLoad"></div>
+                        <span class="sr-only">Loading...</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden" name="ml-submit" value="1">
+                <input type="hidden" name="anticsrf" value="true">
+              </form>
+            </div>
+            <div class="ml-form-successBody row-success" style="display: none">
+              <div class="ml-form-successContent">
+                <h4>Thank you!</h4>
+                <p>You have successfully joined our subscriber list.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal (Supabase Signup/Login) -->
+  <div id="auth-modal" class="email-modal-overlay" style="display: none;">
+    <div class="email-modal-content">
+      <div style="max-width: 400px; width: 100%;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h4 style="font-size: 24px; font-weight: bold; margin-bottom: 8px; color: #1e293b;">Save Your Progress</h4>
+          <p style="color: #64748b;">Create an account to sync your progress across devices</p>
+        </div>
+        
+        <!-- Tabs -->
+        <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0;">
+          <button id="auth-tab-signup" class="auth-tab active" onclick="switchAuthTab('signup')">Sign Up</button>
+          <button id="auth-tab-login" class="auth-tab" onclick="switchAuthTab('login')">Log In</button>
+        </div>
+        
+        <!-- Signup Form -->
+        <div id="auth-form-signup" class="auth-form">
+          <form id="signup-form" onsubmit="handleSignupSubmit(event)">
+            <div style="margin-bottom: 16px;">
+              <input type="email" id="signup-email" class="email-input" placeholder="your.email@example.com" autocomplete="email" required>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <input type="password" id="signup-password" class="email-input" placeholder="Password (min 6 characters)" autocomplete="new-password" required minlength="6">
+            </div>
+            <div style="margin-bottom: 16px;">
+              <button type="submit" class="primary" style="width: 100%; padding: 12px; background: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Sign Up
+              </button>
+            </div>
+            <div id="signup-error" style="color: #ef4444; font-size: 14px; margin-top: 8px; display: none;"></div>
+          </form>
+        </div>
+        
+        <!-- Login Form -->
+        <div id="auth-form-login" class="auth-form" style="display: none;">
+          <form id="login-form" onsubmit="handleLoginSubmit(event)">
+            <div style="margin-bottom: 16px;">
+              <input type="email" id="login-email" class="email-input" placeholder="your.email@example.com" autocomplete="email" required>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <input type="password" id="login-password" class="email-input" placeholder="Password" autocomplete="current-password" required>
+            </div>
+            <div style="margin-bottom: 8px; text-align: right;">
+              <a href="javascript:void(0)" onclick="handlePasswordResetRequest(document.getElementById('login-email').value || '')" style="color: #0ea5e9; font-size: 14px; text-decoration: underline;">
+                Forgot password?
+              </a>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <button type="submit" class="primary" style="width: 100%; padding: 12px; background: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Log In
+              </button>
+            </div>
+            <div id="login-error" style="color: #ef4444; font-size: 14px; margin-top: 8px; display: none;"></div>
+          </form>
+        </div>
+        
+        <div style="text-align: center; margin-top: 16px;">
+          <button onclick="closeAuthModal()" style="background: none; border: none; color: #64748b; cursor: pointer; text-decoration: underline;">
+            Continue without account
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="min-h-screen">
     <!-- Header -->
     <header class="relative bg-cover bg-center h-[50vh] min-h-[300px] md:h-[400px]" style="background-image: url('https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');" role="img" aria-label="Beautiful landscape view of Japan with mountains and traditional architecture">
@@ -432,7 +948,9 @@
       <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
         <div class="flex justify-between items-start pt-6">
           <div class="text-white font-bold text-xl">🇯🇵</div>
-          <a class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="javascript:void(0)" onclick="handleSignup()">Signup</a>
+          <div id="auth-button-container">
+            <a id="auth-button" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="javascript:void(0)" onclick="openAuthModal()">Save / Load</a>
+          </div>
         </div>
         <div class="flex flex-col items-center justify-center h-full text-center text-white pb-16">
           <h1 class="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">Moving to Japan Checklist</h1>
@@ -497,6 +1015,615 @@
   </div>
 
   <script>
+    // Backend API configuration - loaded from config.js (generated at build time from environment variables)
+    const BACKEND_API_URL = window.APP_CONFIG?.BACKEND_API_URL || 'http://localhost:8000';
+    
+    // Authentication state
+    const AUTH_TOKEN_KEY = 'move2japan_auth_token';
+    const USER_INFO_KEY = 'move2japan_user_info';
+    let currentUser = null;
+    let authToken = null;
+    
+    // Anonymous user ID storage (using localStorage to persist across sessions)
+    const ANONYMOUS_USER_ID_KEY = 'move2japan_anonymous_user_id';
+    // Flag to suppress email gate without associating with a user ID
+    const EMAIL_GATE_SUPPRESSED_KEY = 'move2japan_email_gate_suppressed';
+    
+    // Initialize auth state
+    function initAuthState() {
+      authToken = localStorage.getItem(AUTH_TOKEN_KEY);
+      const userInfo = localStorage.getItem(USER_INFO_KEY);
+      if (userInfo) {
+        try {
+          currentUser = JSON.parse(userInfo);
+        } catch (e) {
+          console.error('Error parsing user info:', e);
+          currentUser = null;
+        }
+      }
+      updateAuthButton();
+    }
+    
+    // Update auth button based on login state
+    function updateAuthButton() {
+      const authButton = document.getElementById('auth-button');
+      const authContainer = document.getElementById('auth-button-container');
+      if (authButton && authContainer) {
+        if (currentUser) {
+          authButton.textContent = `${currentUser.email} (Logout)`;
+          authButton.onclick = handleLogout;
+        } else {
+          authButton.textContent = 'Save / Load';
+          authButton.onclick = openAuthModal;
+        }
+      }
+    }
+    
+    // Get anonymous user ID from storage
+    function getAnonymousUserId() {
+      return localStorage.getItem(ANONYMOUS_USER_ID_KEY);
+    }
+    
+    // Save anonymous user ID
+    function saveAnonymousUserId(userId) {
+      localStorage.setItem(ANONYMOUS_USER_ID_KEY, userId);
+      console.log('Saved Anonymous User ID to localStorage:', userId);
+    }
+    
+    // Get or create anonymous user ID from backend
+    async function getOrCreateAnonymousUserId() {
+      // Check if we already have one
+      const existingId = getAnonymousUserId();
+      if (existingId) {
+        console.log('Found existing Anonymous User ID:', existingId);
+        return existingId;
+      }
+      
+      console.log('No existing Anonymous User ID found, creating new one...');
+      try {
+        const response = await fetch(`${BACKEND_API_URL}/api/anonymous-user`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Backend response:', data);
+          const anonymousUserId = data.anonymous_user_id;
+          if (anonymousUserId) {
+            saveAnonymousUserId(anonymousUserId);
+            console.log('Successfully created and saved Anonymous User ID:', anonymousUserId);
+            return anonymousUserId;
+          } else {
+            console.error('Backend returned no anonymous_user_id in response');
+          }
+        } else {
+          let errorText;
+          try {
+            const errorData = await response.json();
+            errorText = errorData.detail || JSON.stringify(errorData);
+          } catch {
+            errorText = await response.text();
+          }
+          console.error('Failed to get anonymous user ID:', response.status, response.statusText);
+          console.error('Error details:', errorText);
+        }
+      } catch (error) {
+        console.error('Error getting anonymous user ID:', error);
+      }
+      
+      return null;
+    }
+    
+    // Auth modal functions
+    function openAuthModal() {
+      const modal = document.getElementById('auth-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        switchAuthTab('signup');
+      }
+    }
+    
+    function closeAuthModal() {
+      const modal = document.getElementById('auth-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+    
+    function switchAuthTab(tab) {
+      const signupTab = document.getElementById('auth-tab-signup');
+      const loginTab = document.getElementById('auth-tab-login');
+      const signupForm = document.getElementById('auth-form-signup');
+      const loginForm = document.getElementById('auth-form-login');
+      
+      // Clear any error messages when switching tabs
+      const signupError = document.getElementById('signup-error');
+      const loginError = document.getElementById('login-error');
+      if (signupError) {
+        signupError.style.display = 'none';
+        signupError.textContent = '';
+      }
+      if (loginError) {
+        loginError.style.display = 'none';
+        loginError.textContent = '';
+      }
+      
+      if (tab === 'signup') {
+        signupTab.classList.add('active');
+        loginTab.classList.remove('active');
+        signupForm.style.display = 'block';
+        loginForm.style.display = 'none';
+      } else {
+        loginTab.classList.add('active');
+        signupTab.classList.remove('active');
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+      }
+    }
+    
+    // Handle password reset request
+    async function handlePasswordResetRequest(email) {
+      // If no email provided, prompt for it
+      if (!email || email.trim() === '') {
+        email = prompt('Please enter your email address to reset your password:');
+        if (!email || email.trim() === '') {
+          return;
+        }
+      }
+      
+      try {
+        const response = await fetch(`${BACKEND_API_URL}/api/auth/password-reset`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: email.trim() })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert('Password reset email sent! Please check your inbox for instructions to reset your password.');
+        } else {
+          // Even if email doesn't exist, we show success message for security (don't reveal if email exists)
+          alert('If an account exists with that email, a password reset link has been sent. Please check your inbox.');
+        }
+      } catch (error) {
+        console.error('Password reset error:', error);
+        alert('An error occurred. Please try again later.');
+      }
+    }
+    
+    async function handleSignupSubmit(event) {
+      event.preventDefault();
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      const errorDiv = document.getElementById('signup-error');
+      
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      try {
+        const anonymousUserId = getAnonymousUserId();
+        const localData = getCookie(COOKIE_NAME);
+        const localChecklistData = localData?.checklistData || stateManager.get('checklistData');
+        // Note: Completion state is now embedded in checklistData
+        
+        const response = await fetch(`${BACKEND_API_URL}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            password,
+            anonymous_user_id: anonymousUserId
+          })
+        });
+        
+        const data = await response.json();
+        
+        // Check status code - only 200/201 is success
+        if (response.status === 200 || response.status === 201) {
+          // Validate response data
+          if (!data.user?.id || !data.user?.email) {
+            errorDiv.textContent = 'Signup failed: Invalid response from server.';
+            errorDiv.style.display = 'block';
+            return;
+          }
+          
+          // Save auth state
+          authToken = data.access_token;
+          currentUser = data.user;
+          localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+          localStorage.setItem(USER_INFO_KEY, JSON.stringify(currentUser));
+          
+          // Update stateManager with auth state
+          stateManager.setState({ authToken: authToken, currentUser: currentUser });
+          
+          updateAuthButton();
+          closeAuthModal();
+          
+          // Migrate or load data
+          if (localChecklistData && Object.keys(localChecklistData).length > 0) {
+            await saveUserSiteData(localChecklistData);
+          } else {
+            await loadUserSiteData();
+          }
+          
+          alert('Account created successfully! Your local progress has been saved to the cloud.');
+        } else {
+          // Handle error response
+          const errorMessage = data.detail || 'Signup failed. Please try again.';
+          const isDuplicate = response.status === 400 && (
+            errorMessage.toLowerCase().includes('already') || 
+            errorMessage.toLowerCase().includes('exists')
+          );
+          
+          if (isDuplicate) {
+            errorDiv.innerHTML = `
+              <div style="margin-bottom: 8px;">${errorMessage}</div>
+              <div style="font-size: 13px; margin-top: 8px;">
+                <a href="javascript:void(0)" onclick="switchAuthTab('login')" style="color: #0ea5e9; text-decoration: underline; margin-right: 12px;">Log in instead</a>
+                <a href="javascript:void(0)" onclick="handlePasswordResetRequest('${email}')" style="color: #0ea5e9; text-decoration: underline;">Reset password</a>
+              </div>
+            `;
+          } else {
+            errorDiv.textContent = errorMessage;
+          }
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Signup error:', error);
+        errorDiv.textContent = 'An error occurred. Please try again.';
+        errorDiv.style.display = 'block';
+      }
+    }
+    
+    async function handleLoginSubmit(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const errorDiv = document.getElementById('login-error');
+      
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      try {
+        // Get local data before login to potentially merge it
+        const localData = getCookie(COOKIE_NAME);
+        const localChecklistData = localData?.checklistData;
+        
+        const response = await fetch(`${BACKEND_API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Save auth token and user info
+          authToken = data.access_token;
+          currentUser = data.user;
+          localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+          localStorage.setItem(USER_INFO_KEY, JSON.stringify(currentUser));
+          
+          // Update stateManager with auth state
+          stateManager.setState({ authToken: authToken, currentUser: currentUser });
+          
+          updateAuthButton();
+          closeAuthModal();
+          
+          // Load user's saved data from Supabase
+          const serverData = await loadUserSiteData();
+          
+          // If we have local data and no server data, migrate local to server
+          if (localChecklistData && Object.keys(localChecklistData).length > 0 && 
+              (!serverData || !serverData.checklist_data || Object.keys(serverData.checklist_data).length === 0)) {
+            await saveUserSiteData(localChecklistData);
+            console.log('Migrated local data to Supabase on login');
+            alert('Logged in successfully! Your local progress has been saved to the cloud.');
+          } else if (serverData && serverData.checklist_data && Object.keys(serverData.checklist_data).length > 0) {
+            alert('Logged in successfully! Your saved progress has been loaded.');
+          } else {
+            alert('Logged in successfully!');
+          }
+        } else {
+          errorDiv.textContent = data.detail || 'Login failed. Please check your credentials.';
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        errorDiv.textContent = 'An error occurred. Please try again.';
+        errorDiv.style.display = 'block';
+      }
+    }
+    
+    async function handleLogout() {
+      try {
+        if (authToken) {
+          await fetch(`${BACKEND_API_URL}/api/auth/logout`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json',
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+      
+      // Clear auth state
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(USER_INFO_KEY);
+      
+      // Update stateManager with cleared auth state
+      stateManager.setState({ authToken: null, currentUser: null });
+      
+      // Clear anonymous user ID to prevent cross-user association
+      // This ensures a new user on the same browser won't be linked to the previous user's anonymous ID
+      localStorage.removeItem(ANONYMOUS_USER_ID_KEY);
+      
+      // Set flag to suppress email gate (but don't associate with a user ID)
+      // This prevents the email gate from showing without creating a privacy issue
+      localStorage.setItem(EMAIL_GATE_SUPPRESSED_KEY, 'true');
+      
+      updateAuthButton();
+      
+      // Reset content to initial state
+      // Clear the cookie by setting it to expire in the past
+      const expires = new Date();
+      expires.setTime(expires.getTime() - 1);
+      document.cookie = `${COOKIE_NAME}=;expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+      
+      // Reload checklist from initial URL
+      const rawChecklistData = await loadInitialChecklist();
+      
+      if (rawChecklistData) {
+        // Normalize to new array format (this will initialize completed: false on all tasks)
+        const normalized = normalizeChecklistData(rawChecklistData);
+        stateManager.setState({ checklistData: normalized });
+        
+        // Save fresh state to cookie
+        setCookie(COOKIE_NAME, {
+          checklistData: normalized
+        }, COOKIE_EXPIRY_DAYS);
+        
+        renderChecklist();
+        updateOverallProgress();
+      } else {
+        // If loading fails, show error message
+        document.getElementById('checklist-container').innerHTML = 
+          '<div class="text-center text-red-600">Failed to load checklist. Please refresh the page.</div>';
+      }
+    }
+    
+    // Save user's site data to backend
+    async function saveUserSiteData(checklistDataToSave) {
+      if (!authToken || !currentUser) {
+        console.warn('Cannot save: user not authenticated');
+        return false;
+      }
+      
+      try {
+        const payload = {
+          checklist_data: checklistDataToSave
+        };
+        
+        // Log data being saved (handle both array and object formats)
+        const checklistKeys = Array.isArray(checklistDataToSave) 
+          ? `Array with ${checklistDataToSave.length} items` 
+          : (checklistDataToSave && typeof checklistDataToSave === 'object'
+              ? Object.keys(checklistDataToSave).join(', ')
+              : 'unknown');
+        console.log('💾 Saving to backend:', {
+          checklistDataType: Array.isArray(checklistDataToSave) ? 'array' : typeof checklistDataToSave,
+          checklistDataInfo: checklistKeys,
+          userId: currentUser.id,
+          payloadSize: JSON.stringify(payload).length + ' bytes'
+        });
+        
+        const response = await fetch(`${BACKEND_API_URL}/api/site-data`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          // Log saved data (handle both array and object formats)
+          const savedChecklistInfo = Array.isArray(result.checklist_data)
+            ? `Array with ${result.checklist_data.length} items`
+            : (result.checklist_data && typeof result.checklist_data === 'object'
+                ? Object.keys(result.checklist_data).join(', ')
+                : 'unknown');
+          console.log('✅ Successfully saved user site data to backend:', {
+            savedChecklistInfo: savedChecklistInfo,
+            updatedAt: result.updated_at
+          });
+          return true;
+        } else {
+          const errorText = await response.text();
+          console.error('Failed to save user site data to backend:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText
+          });
+          return false;
+        }
+      } catch (error) {
+        console.error('Error saving user site data:', error);
+        return false;
+      }
+    }
+    
+    // Load user's saved site data from backend
+    async function loadUserSiteData() {
+      if (!authToken || !currentUser) {
+        console.log('Cannot load: user not authenticated');
+        return null;
+      }
+      
+      try {
+        console.log('Loading user site data from backend for user:', currentUser.id);
+        const response = await fetch(`${BACKEND_API_URL}/api/site-data`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Log loaded data (handle both array and object formats)
+          const checklistInfo = data.checklist_data 
+            ? (Array.isArray(data.checklist_data) 
+                ? `Array with ${data.checklist_data.length} items`
+                : (typeof data.checklist_data === 'object'
+                    ? `${Object.keys(data.checklist_data).length} keys: ${Object.keys(data.checklist_data).join(', ')}`
+                    : 'unknown'))
+            : 'none';
+          console.log('📥 Backend response received:', {
+            hasChecklistData: !!data.checklist_data,
+            checklistDataInfo: checklistInfo,
+            checklistDataType: data.checklist_data ? (Array.isArray(data.checklist_data) ? 'array' : typeof data.checklist_data) : 'none',
+            updatedAt: data.updated_at
+          });
+          
+          // Note: Completion state is now embedded in checklist_data as 'completed' property on each task
+          
+          // Check if we have valid checklist data
+          // Backend returns [] (empty array) or {} (empty object) when no data exists
+          const hasChecklistData = data.checklist_data !== null && 
+                                   data.checklist_data !== undefined &&
+                                   !(Array.isArray(data.checklist_data) && data.checklist_data.length === 0) &&
+                                   !(typeof data.checklist_data === 'object' && 
+                                     !Array.isArray(data.checklist_data) && 
+                                     Object.keys(data.checklist_data).length === 0);
+          
+          if (hasChecklistData) {
+            // Normalize to new array format
+            const normalized = normalizeChecklistData(data.checklist_data);
+            stateManager.setState({ checklistData: normalized });
+            
+            // Check if normalized data is valid
+            const hasValidData = normalized && (
+              Array.isArray(normalized) 
+                ? normalized.length > 0 
+                : (typeof normalized === 'object' && Object.keys(normalized).length > 0)
+            );
+            
+            if (hasValidData) {
+            renderChecklist();
+            updateOverallProgress();
+              console.log('✅ Successfully loaded and rendered user site data from backend');
+            return data;
+            } else {
+              console.log('⚠️ Checklist data exists but is empty after normalization - will load default');
+              // Clear invalid data
+              stateManager.setState({ checklistData: null });
+            }
+          } else {
+            console.log('ℹ️ No checklist data found in backend response (empty or missing) - will load default');
+            // Clear any invalid data
+            stateManager.setState({ checklistData: null });
+          }
+          
+          // If we get here, we have no valid checklist data, so return data to indicate successful request
+          // The caller will then load the default checklist
+          return data;
+        } else {
+          const errorText = await response.text();
+          console.error('Failed to load user site data from backend:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText
+          });
+        return null;
+        }
+      } catch (error) {
+        console.error('Error loading user site data:', error);
+        return null;
+      }
+    }
+    
+    // MailerLite success callback - called when email is submitted
+    function ml_webform_success_33402369() {
+      // Get anonymous user ID after successful email submission to MailerLite
+      getOrCreateAnonymousUserId().then(() => {
+        // Close modal after a short delay
+        setTimeout(() => {
+          const modal = document.getElementById('email-modal');
+          if (modal) {
+            modal.style.display = 'none';
+          }
+        }, 600);
+      });
+    }
+    
+    // Show email modal if anonymous user ID not found and email gate hasn't been suppressed
+    function checkAndShowEmailModal() {
+      const anonymousUserId = getAnonymousUserId();
+      const emailGateSuppressed = localStorage.getItem(EMAIL_GATE_SUPPRESSED_KEY);
+      
+      // Only show if no anonymous user ID AND email gate hasn't been suppressed
+      if (!anonymousUserId && !emailGateSuppressed) {
+        const modal = document.getElementById('email-modal');
+        if (modal) {
+          modal.style.display = 'flex';
+          // Focus on email input
+          setTimeout(() => {
+            const emailInput = document.querySelector('#mlb2-33402369 input[name="fields[email]"]');
+            if (emailInput) {
+              emailInput.focus();
+            }
+          }, 100);
+        }
+      }
+    }
+    
+    // Initialize email modal
+    function initEmailModal() {
+      // Check if we should show the email modal FIRST (before creating anonymous user ID)
+      const anonymousUserId = getAnonymousUserId();
+      const emailGateSuppressed = localStorage.getItem(EMAIL_GATE_SUPPRESSED_KEY);
+      
+      // If no anonymous user ID exists AND email gate hasn't been suppressed, show the email modal
+      if (!anonymousUserId && !emailGateSuppressed) {
+        checkAndShowEmailModal();
+      }
+      
+      // Intercept form submission to create anonymous user ID when email is submitted
+      const mailerLiteForm = document.querySelector('#mlb2-33402369 form.ml-block-form');
+      if (mailerLiteForm) {
+        mailerLiteForm.addEventListener('submit', async function(e) {
+          // Create anonymous user ID when form is submitted to MailerLite
+          // This ID will be used for local storage
+          await getOrCreateAnonymousUserId();
+        }, { once: true }); // Only listen once
+      }
+    }
+    
+    // Note: We do NOT create anonymous user ID on page load
+    // It should only be created when:
+    // 1. User submits email to MailerLite (via initEmailModal)
+    // 2. User interacts with the site and we need to track them
+    
     // Cookie management
     const COOKIE_NAME = 'japan_checklist_data';
     const COOKIE_EXPIRY_DAYS = 365;
@@ -525,13 +1652,294 @@
       return null;
     }
 
-    // Checklist state management
-    let checklistData = null;
-    let completedTasks = new Set();
+    // Initialize Application Modules
+    const dataManager = new ChecklistDataManager(stateManager);
+    const dragDropManager = new DragDropManager(dataManager, (type, ...args) => {
+      // Callback when reordering happens
+      saveProgress();
+      renderChecklist();
+    });
+    const taskRenderer = new TaskRenderer(dataManager, dragDropManager, {
+      onToggle: (categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex) => {
+        dataManager.toggleTask(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex);
+        saveProgress();
+        updateOverallProgress();
+        updateCategoryProgress(categoryIndex, phaseIndex);
+        const subcategoryCheckbox = document.querySelector(
+          `[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"][data-subcategory-index="${subcategoryIndex}"] input[type="checkbox"]`
+        );
+        if (subcategoryCheckbox) {
+          updateSubcategoryCheckboxState(categoryIndex, phaseIndex, subcategoryIndex, subcategoryCheckbox);
+        }
+        const phaseCheckbox = document.querySelector(
+          `[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"] input[type="checkbox"]`
+        );
+        if (phaseCheckbox) {
+          updatePhaseCheckboxState(categoryIndex, phaseIndex, phaseCheckbox);
+        }
+      },
+      onEdit: (categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex) => {
+        // Handled in TaskRenderer
+      },
+      onDelete: (categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex, swipeContainer) => {
+        deleteTask(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex, swipeContainer);
+      },
+      onShowLinks: (links, taskName, row) => {
+        showTaskLinks(links, taskName, row);
+      },
+      addSwipeHandlers: (row, container) => {
+        addSwipeHandlers(row, container);
+      },
+      onSave: () => {
+        // Update stateManager to ensure latest data is saved
+        const currentData = stateManager.get('checklistData');
+        stateManager.setState({ checklistData: currentData }); // Trigger state update
+        saveProgress();
+      }
+    });
+    const subcategoryRenderer = new SubcategoryRenderer(dataManager, dragDropManager, taskRenderer, {
+      onToggleSubcategory: (categoryIndex, phaseIndex, subcategoryIndex, checked) => {
+        dataManager.setSubcategoryTasksCompleted(categoryIndex, phaseIndex, subcategoryIndex, checked);
+        saveProgress();
+        updateOverallProgress();
+        updateCategoryProgress(categoryIndex, phaseIndex);
+        const phaseCheckbox = document.querySelector(
+          `[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"] input[type="checkbox"]`
+        );
+        if (phaseCheckbox) {
+          updatePhaseCheckboxState(categoryIndex, phaseIndex, phaseCheckbox);
+        }
+      },
+      onEditSubcategory: (categoryIndex, phaseIndex, subcategoryIndex, newTitle, oldTitle) => {
+        const { subcategories } = dataManager.getPhaseData(categoryIndex, phaseIndex);
+        if (subcategories && subcategories[subcategoryIndex]) {
+          const oldSubcategoryObj = subcategories[subcategoryIndex];
+          const oldSubcategoryName = Object.keys(oldSubcategoryObj)[0];
+          const subcategoryData = oldSubcategoryObj[oldSubcategoryName];
+          subcategories[subcategoryIndex] = { [newTitle]: subcategoryData };
+          // Update stateManager to ensure latest data is saved
+          const currentData = stateManager.get('checklistData');
+          stateManager.setState({ checklistData: currentData }); // Trigger state update
+          saveProgress();
+          updateOverallProgress();
+          updateCategoryProgress(categoryIndex, phaseIndex);
+        }
+      },
+      onDeleteSubcategory: (categoryIndex, phaseIndex, subcategoryIndex, element) => {
+        deleteSubSection(categoryIndex, phaseIndex, subcategoryIndex, element);
+      },
+      onAddTask: (categoryIndex, phaseIndex, subcategoryIndex, container, parent) => {
+        showAddTaskDialog(categoryIndex, phaseIndex, subcategoryIndex, container, parent);
+      },
+      updateSubcategoryCheckbox: (categoryIndex, phaseIndex, subcategoryIndex, checkbox) => {
+        updateSubcategoryCheckboxState(categoryIndex, phaseIndex, subcategoryIndex, checkbox);
+      },
+      addSwipeHandlers: (element, container) => {
+        addSwipeHandlers(element, container);
+      }
+    });
+    const phaseRenderer = new PhaseRenderer(dataManager, dragDropManager, subcategoryRenderer, {
+      onTogglePhase: (categoryIndex, phaseIndex, checked) => {
+        dataManager.setPhaseTasksCompleted(categoryIndex, phaseIndex, checked);
+        saveProgress();
+        updateOverallProgress();
+        updateCategoryProgress(categoryIndex, phaseIndex);
+      },
+      onEditPhase: (categoryIndex, phaseIndex, newTitle, oldTitle) => {
+        const { phases } = dataManager.getCategoryData(categoryIndex);
+        if (phases && phases[phaseIndex]) {
+          const oldPhaseObj = phases[phaseIndex];
+          const oldPhaseName = Object.keys(oldPhaseObj)[0];
+          const phaseData = oldPhaseObj[oldPhaseName];
+          phases[phaseIndex] = { [newTitle]: phaseData };
+          // Update stateManager to ensure latest data is saved
+          const currentData = stateManager.get('checklistData');
+          stateManager.setState({ checklistData: currentData }); // Trigger state update
+          saveProgress();
+          updateOverallProgress();
+          updateCategoryProgress(categoryIndex, phaseIndex);
+        }
+      },
+      onDeletePhase: (categoryIndex, phaseIndex, element) => {
+        deletePhase(categoryIndex, phaseIndex, element);
+      },
+      onAddCategory: (categoryIndex, phaseIndex, container) => {
+        addNewCategory(categoryIndex, phaseIndex, container);
+      },
+      updateCategoryProgress: (categoryIndex, phaseIndex) => {
+        updateCategoryProgress(categoryIndex, phaseIndex);
+      },
+      updatePhaseCheckbox: (categoryIndex, phaseIndex, checkbox) => {
+        updatePhaseCheckboxState(categoryIndex, phaseIndex, checkbox);
+      },
+      addSwipeHandlers: (element, container) => {
+        addSwipeHandlers(element, container);
+      }
+    });
+    
+    // Initialize state manager with auth state
+    stateManager.setState({
+      authToken: localStorage.getItem(AUTH_TOKEN_KEY),
+      currentUser: (() => {
+        const userInfo = localStorage.getItem(USER_INFO_KEY);
+        if (userInfo) {
+          try {
+            return JSON.parse(userInfo);
+          } catch (e) {
+            return null;
+          }
+        }
+        return null;
+      })(),
+      anonymousUserId: localStorage.getItem(ANONYMOUS_USER_ID_KEY),
+      emailGateSuppressed: !!localStorage.getItem(EMAIL_GATE_SUPPRESSED_KEY)
+    });
+    
+    // Subscribe to state changes to update local variables for backwards compatibility
+    stateManager.subscribe((prevState, newState) => {
+      if (newState.authToken !== prevState.authToken) {
+        authToken = newState.authToken;
+      }
+      if (newState.currentUser !== prevState.currentUser) {
+        currentUser = newState.currentUser;
+      }
+    });
+    
     let swipeCloseHandlerAdded = false;
     
     // Default URL for checklist JSON
-    const DEFAULT_CHECKLIST_URL = 'https://gist.githubusercontent.com/jalakoo/44ba89b8f60fc97400c9750112e5ba7c/raw/move2japan_from_us.json';
+    const DEFAULT_CHECKLIST_URL = 'https://gist.githubusercontent.com/jalakoo/35757f63df6ddc71f6cf8e31acd5c5bd/raw/move2japan_initial_config.json';
+    
+    // Recursively initialize completed property on all task objects
+    function initializeCompletedProperty(data) {
+      if (!data) return;
+      
+      if (Array.isArray(data)) {
+        data.forEach(item => {
+          if (isTaskObject(item)) {
+            // Initialize completed property if not already set
+            if (item.completed === undefined) {
+              item.completed = false;
+            }
+            // Recursively process nested arrays (for subtasks)
+            Object.values(item).forEach(value => {
+              if (Array.isArray(value)) {
+                initializeCompletedProperty(value);
+              }
+            });
+          } else if (typeof item === 'object' && item !== null) {
+            // It's a container, recursively process its values
+            Object.values(item).forEach(value => {
+              if (Array.isArray(value)) {
+                initializeCompletedProperty(value);
+              }
+            });
+          }
+        });
+      } else if (typeof data === 'object' && data !== null) {
+        Object.values(data).forEach(value => {
+          if (Array.isArray(value)) {
+            initializeCompletedProperty(value);
+          }
+        });
+      }
+    }
+    
+    // Normalize checklist data to new array-based format
+    function normalizeChecklistData(data) {
+      if (!data) return null;
+      
+      let normalized;
+      
+      // If already in new format (array), normalize it
+      if (Array.isArray(data)) {
+        normalized = [];
+        data.forEach(categoryObj => {
+          const categoryName = Object.keys(categoryObj)[0];
+          const phasesArray = categoryObj[categoryName];
+          
+          if (!Array.isArray(phasesArray)) {
+            // Already normalized, return as-is
+            normalized.push(categoryObj);
+            return;
+          }
+          
+          // Check if phases array contains one object with multiple phase keys
+          // or multiple objects each with one phase key
+          const normalizedPhases = [];
+          
+          phasesArray.forEach(phaseItem => {
+            if (typeof phaseItem === 'object' && phaseItem !== null) {
+              const phaseKeys = Object.keys(phaseItem);
+              
+              // If this object has multiple phase keys, split them into separate phase objects
+              phaseKeys.forEach(phaseName => {
+                const phaseData = phaseItem[phaseName];
+                normalizedPhases.push({
+                  [phaseName]: phaseData
+                });
+              });
+            }
+          });
+          
+          normalized.push({
+            [categoryName]: normalizedPhases
+          });
+        });
+      } else {
+        // Convert old object-based format to new array-based format
+        normalized = [];
+        for (const categoryName in data) {
+          const categoryObj = data[categoryName];
+          const phases = [];
+          
+          for (const phaseName in categoryObj) {
+            const phaseObj = categoryObj[phaseName];
+            const subcategories = [];
+            
+            for (const subcategoryName in phaseObj) {
+              subcategories.push({
+                [subcategoryName]: phaseObj[subcategoryName]
+              });
+            }
+            
+            phases.push({
+              [phaseName]: subcategories
+            });
+          }
+          
+          normalized.push({
+            [categoryName]: phases
+          });
+        }
+      }
+      
+      // Initialize completed property on all tasks
+      initializeCompletedProperty(normalized);
+      
+      return normalized;
+    }
+    
+    // Helper functions - now use dataManager
+    function getCategoryData(categoryIndex) {
+      return dataManager.getCategoryData(categoryIndex) || { name: null, phases: null };
+    }
+    
+    function getPhaseData(categoryIndex, phaseIndex) {
+      return dataManager.getPhaseData(categoryIndex, phaseIndex) || { name: null, subcategories: null };
+    }
+    
+    function getSubcategoryData(categoryIndex, phaseIndex, subcategoryIndex) {
+      return dataManager.getSubcategoryData(categoryIndex, phaseIndex, subcategoryIndex) || { name: null, items: null };
+    }
+    
+    function getTaskObject(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex = null) {
+      return dataManager.getTaskObject(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex);
+    }
+    
+    function isTaskObject(obj) {
+      return dataManager.isTaskObject(obj);
+    }
 
     // Load initial checklist from JSON URL
     async function loadInitialChecklist() {
@@ -559,17 +1967,17 @@
       expires.setTime(expires.getTime() - 1);
       document.cookie = `${COOKIE_NAME}=;expires=${expires.toUTCString()};path=/;SameSite=Lax`;
       
-      // Reset completed tasks
-      completedTasks = new Set();
-      
       // Reload checklist from DEFAULT_CHECKLIST_URL
-      checklistData = await loadInitialChecklist();
+      const rawChecklistData = await loadInitialChecklist();
       
-      if (checklistData) {
+      if (rawChecklistData) {
+        // Normalize to new array format (this will initialize completed: false on all tasks)
+        const normalized = normalizeChecklistData(rawChecklistData);
+        stateManager.setState({ checklistData: normalized });
+        
         // Save fresh state to cookie
         setCookie(COOKIE_NAME, {
-          checklistData: checklistData,
-          completedTasks: []
+          checklistData: normalized
         }, COOKIE_EXPIRY_DAYS);
         
         // Re-render the checklist
@@ -585,26 +1993,57 @@
 
     // Initialize app
     async function init() {
-      // Check if user has visited before and has saved progress
+      // Initialize auth state
+      initAuthState();
+      
+      // Check if user has visited before and has saved progress (from cookie)
       const savedData = getCookie(COOKIE_NAME);
       
-      // Restore saved progress first (before loading new data)
-      if (savedData && savedData.completedTasks && Array.isArray(savedData.completedTasks)) {
-        completedTasks = new Set(savedData.completedTasks);
-        console.log('Restored', completedTasks.size, 'completed tasks from cookie');
-      } else {
-        completedTasks = new Set();
+      // If user is logged in, try to load their data from backend first
+      if (authToken && currentUser) {
+        const serverData = await loadUserSiteData();
+        // If we got valid checklist data from server, use it (it's already loaded and rendered in loadUserSiteData)
+        const checklistData = stateManager.get('checklistData');
+        if (checklistData && (
+          Array.isArray(checklistData) ? checklistData.length > 0 : Object.keys(checklistData).length > 0
+        )) {
+          // Data already loaded and rendered by loadUserSiteData
+          // Completion state is embedded in checklistData
+          wireUpOverallProgressSwipe();
+          return;
+        }
+        // This handles the case where logged-in user has no saved checklist - use default
+        console.log('No valid checklist data from server, will load default checklist');
       }
       
       // Always load the latest checklist from URL (in case it was updated)
-      checklistData = await loadInitialChecklist();
-      
-      if (checklistData) {
-        // Save current state to cookie (with latest checklist data and preserved selections)
-        // This ensures the cookie is updated with the latest checklist structure
+      // But only if we don't already have valid checklistData from server
+      const currentChecklistData = stateManager.get('checklistData');
+      if (!currentChecklistData) {
+        let rawChecklistData = await loadInitialChecklist();
+        
+        if (rawChecklistData) {
+          // Normalize to new array format (this will initialize completed: false on all tasks)
+          const normalized = normalizeChecklistData(rawChecklistData);
+          stateManager.setState({ checklistData: normalized });
+          
+          // If user is logged in and we just loaded default checklist, save it to backend
+          if (authToken && currentUser) {
+            // Save the default checklist to backend so user has it saved
+            setTimeout(async () => {
+              try {
+                await saveUserSiteData(normalized);
+                console.log('✅ Saved default checklist to backend for user');
+              } catch (error) {
+                console.error('Failed to save default checklist to backend:', error);
+              }
+            }, 1000); // Small delay to ensure page is loaded
+          }
+          
+          // Save current state to cookie (with latest checklist data)
+          // Completion state is embedded in checklistData
         setCookie(COOKIE_NAME, {
-          checklistData: checklistData,
-          completedTasks: Array.from(completedTasks)
+            checklistData: normalized
         }, COOKIE_EXPIRY_DAYS);
         
         renderChecklist();
@@ -612,13 +2051,15 @@
       } else {
         // If loading fails, try to use saved data as fallback
         if (savedData && savedData.checklistData) {
-          checklistData = savedData.checklistData;
-          // Keep the already restored completedTasks
+            // Normalize saved data to new format
+            const normalized = normalizeChecklistData(savedData.checklistData);
+            stateManager.setState({ checklistData: normalized });
           renderChecklist();
           updateOverallProgress();
         } else {
           document.getElementById('checklist-container').innerHTML = 
             '<div class="text-center text-red-600">Failed to load checklist. Please refresh the page.</div>';
+          }
         }
       }
       
@@ -626,107 +2067,103 @@
       wireUpOverallProgressSwipe();
     }
 
-    // Count all tasks recursively
+    // Count all tasks recursively (new dynamic format)
     function countAllTasks(data) {
-      let count = 0;
-      for (const phaseKey in data) {
-        const phase = data[phaseKey];
-        for (const categoryKey in phase) {
-          const category = phase[categoryKey];
-          for (const subSectionKey in category) {
-            const subSection = category[subSectionKey];
-            if (subSection.tasks) {
-              subSection.tasks.forEach(task => {
-                count++;
-                if (task.subtasks) {
-                  count += task.subtasks.length;
-                }
-              });
-            }
-          }
-        }
-      }
-      return count;
+      if (!data || !Array.isArray(data)) return 0;
+      
+      const taskObjects = [];
+      dataManager.collectTasksFromArray(data, taskObjects);
+      return taskObjects.length;
     }
 
-    // Get task ID
-    function getTaskId(phaseKey, categoryKey, subSectionKey, taskIndex, subtaskIndex = null) {
-      if (subtaskIndex !== null) {
-        return `${phaseKey}::${categoryKey}::${subSectionKey}::${taskIndex}::${subtaskIndex}`;
-      }
-      return `${phaseKey}::${categoryKey}::${subSectionKey}::${taskIndex}`;
+    // Check if task is completed (by checking the task object's completed property)
+    function isTaskCompleted(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex = null) {
+      const task = getTaskObject(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex);
+      return task ? (task.completed === true) : false;
     }
 
-    // Check if task is completed
-    function isTaskCompleted(taskId) {
-      return completedTasks.has(taskId);
-    }
-
-    // Toggle task completion
-    function toggleTask(taskId) {
-      if (completedTasks.has(taskId)) {
-        completedTasks.delete(taskId);
-      } else {
-        completedTasks.add(taskId);
-      }
+    // Toggle task completion (by updating the task object's completed property)
+    function toggleTask(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex = null) {
+      // This is now handled by TaskRenderer callbacks, but kept for backwards compatibility
+      const task = getTaskObject(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex);
+      if (!task) return;
+      
+      dataManager.toggleTask(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex);
       saveProgress();
       updateOverallProgress();
-      updateCategoryProgress();
       
-      // Update phase checkbox state if task belongs to a phase
-      const parts = taskId.split('::');
-      if (parts.length >= 2) {
-        const phaseKey = parts[1];
-        const mainKey = parts[0];
-        const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
-        if (categoryDiv) {
-          const phaseCheckbox = categoryDiv.querySelector('input[type="checkbox"]');
-          if (phaseCheckbox) {
-            updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
-          }
-        }
+      // Update subcategory checkbox
+      const subcategoryCheckbox = document.querySelector(
+        `[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"][data-subcategory-index="${subcategoryIndex}"] input[type="checkbox"]`
+      );
+      if (subcategoryCheckbox) {
+        updateSubcategoryCheckboxState(categoryIndex, phaseIndex, subcategoryIndex, subcategoryCheckbox);
       }
+      
+      // Update phase checkbox
+      const phaseCheckbox = document.querySelector(
+        `[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"] input[type="checkbox"]`
+      );
+          if (phaseCheckbox) {
+        updatePhaseCheckboxState(categoryIndex, phaseIndex, phaseCheckbox);
+      }
+      
+      // Update category progress
+      updateCategoryProgress(categoryIndex, phaseIndex);
     }
 
-    // Toggle all tasks in a phase
-    function togglePhaseTasks(phaseKey, mainKey, checked) {
-      const phase = checklistData[mainKey][phaseKey];
-      const taskIds = [];
-
-      // Collect all task IDs in this phase
-      for (const subSectionKey in phase) {
-        const subSection = phase[subSectionKey];
-        if (subSection.tasks) {
-          subSection.tasks.forEach((task, taskIndex) => {
-            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
-            taskIds.push(taskId);
-
-            // Also collect subtasks
-            if (task.subtasks) {
-              task.subtasks.forEach((subtask, subtaskIndex) => {
-                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
-                taskIds.push(subtaskId);
-              });
+    // Toggle all tasks in a phase (new dynamic format)
+    function togglePhaseTasks(categoryIndex, phaseIndex, checked) {
+      dataManager.setPhaseTasksCompleted(categoryIndex, phaseIndex, checked);
+      
+      // Update UI for all affected task rows
+      const checklistData = stateManager.get('checklistData');
+      if (checklistData) {
+        const taskObjects = [];
+        dataManager.collectTasksFromArray(dataManager.getPhaseData(categoryIndex, phaseIndex).subcategories, taskObjects);
+        
+        taskObjects.forEach((task) => {
+          const rows = document.querySelectorAll('.flex.items-center');
+          rows.forEach(row => {
+            const label = row.querySelector('span[data-task-name]');
+            if (label && label.textContent.trim() === task.name) {
+              const checkbox = row.querySelector('input[type="checkbox"]');
+              if (checkbox) {
+                checkbox.checked = checked;
+                if (label) {
+                  if (checked) {
+                    label.classList.add('strikethrough');
+                  } else {
+                    label.classList.remove('strikethrough');
+                  }
+                }
+              }
             }
           });
-        }
+        });
       }
 
-      // Toggle all tasks
-      if (checked) {
-        taskIds.forEach(taskId => completedTasks.add(taskId));
-      } else {
-        taskIds.forEach(taskId => completedTasks.delete(taskId));
-      }
+      saveProgress();
+      updateOverallProgress();
+      updateCategoryProgress(categoryIndex, phaseIndex);
+    }
+    
+    // Toggle all tasks in a subcategory (recursively)
+    function toggleSubcategoryTasks(categoryIndex, phaseIndex, subcategoryIndex, checked) {
+      dataManager.setSubcategoryTasksCompleted(categoryIndex, phaseIndex, subcategoryIndex, checked);
 
       // Update UI for all affected task rows
-      taskIds.forEach(taskId => {
-        const parts = taskId.split('::');
-        if (parts.length >= 4) {
-          const row = document.querySelector(`span[data-task-id="${taskId}"]`)?.closest('.flex.items-center');
-          if (row) {
+      const { items } = getSubcategoryData(categoryIndex, phaseIndex, subcategoryIndex);
+      if (items) {
+        const taskObjects = [];
+        dataManager.collectTasksFromArray(items, taskObjects);
+        
+        taskObjects.forEach((task) => {
+          const rows = document.querySelectorAll('.flex.items-center');
+          rows.forEach(row => {
+            const label = row.querySelector('span[data-task-name]');
+            if (label && label.textContent.trim() === task.name) {
             const checkbox = row.querySelector('input[type="checkbox"]');
-            const label = row.querySelector(`span[data-task-id="${taskId}"]`);
             if (checkbox) {
               checkbox.checked = checked;
               if (label) {
@@ -734,48 +2171,99 @@
                   label.classList.add('strikethrough');
                 } else {
                   label.classList.remove('strikethrough');
-                }
               }
             }
           }
         }
       });
-
+        });
+      }
+      
+      // Update phase checkbox state (since subcategory changed)
+      const phaseCheckbox = document.querySelector(
+        `[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"] input[type="checkbox"]`
+      );
+      if (phaseCheckbox) {
+        updatePhaseCheckboxState(categoryIndex, phaseIndex, phaseCheckbox);
+      }
+      
+      // Save immediately to local storage
       saveProgress();
       updateOverallProgress();
-      updateCategoryProgress(phaseKey);
+      updateCategoryProgress(categoryIndex, phaseIndex);
+    }
+    
+    // Update subcategory checkbox state based on task completion
+    function updateSubcategoryCheckboxState(categoryIndex, phaseIndex, subcategoryIndex, subcategoryCheckbox) {
+      const counts = dataManager.countSubcategoryTasks(categoryIndex, phaseIndex, subcategoryIndex);
+      const { completed, total } = counts;
+      
+      // Set checkbox state
+      if (total === 0) {
+        subcategoryCheckbox.checked = false;
+        subcategoryCheckbox.indeterminate = false;
+      } else if (completed === total) {
+        subcategoryCheckbox.checked = true;
+        subcategoryCheckbox.indeterminate = false;
+      } else if (completed > 0) {
+        subcategoryCheckbox.checked = false;
+        subcategoryCheckbox.indeterminate = true;
+      } else {
+        subcategoryCheckbox.checked = false;
+        subcategoryCheckbox.indeterminate = false;
+      }
     }
 
-    // Update phase checkbox state based on task completion
-    function updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox) {
-      const phase = checklistData[mainKey][phaseKey];
+    // Update phase checkbox state based on task completion (new dynamic format)
+    function updatePhaseCheckboxState(categoryIndex, phaseIndex, phaseCheckbox) {
+      const { subcategories } = getPhaseData(categoryIndex, phaseIndex);
+      if (!subcategories) return;
+      
       let totalTasks = 0;
       let completedCount = 0;
 
-      // Count all tasks in this phase
-      for (const subSectionKey in phase) {
-        const subSection = phase[subSectionKey];
-        if (subSection.tasks) {
-          subSection.tasks.forEach((task, taskIndex) => {
-            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+      function countTasksInArray(arr) {
+        if (!Array.isArray(arr)) return;
+        
+        arr.forEach((item) => {
+          if (isTaskObject(item)) {
             totalTasks++;
-            if (isTaskCompleted(taskId)) {
+            if (item.completed === true) {
               completedCount++;
             }
 
-            // Also count subtasks
-            if (task.subtasks) {
-              task.subtasks.forEach((subtask, subtaskIndex) => {
-                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+            // Check for nested tasks
+            Object.values(item).forEach(value => {
+              if (Array.isArray(value)) {
+                value.forEach((subItem) => {
+                  if (isTaskObject(subItem)) {
                 totalTasks++;
-                if (isTaskCompleted(subtaskId)) {
+                    if (subItem.completed === true) {
                   completedCount++;
+                    }
                 }
               });
             }
           });
-        }
+          } else if (typeof item === 'object' && item !== null) {
+            // Nested container - recursively process
+            Object.values(item).forEach(value => {
+              if (Array.isArray(value)) {
+                countTasksInArray(value);
+              }
+            });
+          }
+        });
       }
+
+      // Count all tasks in this phase
+      subcategories.forEach((subcategoryObj, subcategoryIndex) => {
+        const subcategoryName = Object.keys(subcategoryObj)[0];
+        const subcategory = subcategoryObj[subcategoryName];
+        if (Array.isArray(subcategory)) {
+          countTasksInArray(subcategory, subcategoryIndex);
+        }
+      });
 
       // Set checkbox state: checked if all tasks are completed, indeterminate if some are completed
       if (totalTasks === 0) {
@@ -793,359 +2281,414 @@
       }
     }
 
-    // Save progress to cookie
-    function saveProgress() {
+    // Save progress to cookie and/or backend
+    async function saveProgress() {
+      const checklistData = stateManager.get('checklistData');
       if (!checklistData) {
         console.warn('Cannot save progress: checklistData is not loaded');
         return;
       }
-      const tasksArray = Array.from(completedTasks);
+      
+      // If no anonymous user ID exists yet, create one when user interacts with the site
+      // This handles the case where user interacts before submitting email
+      if (!getAnonymousUserId()) {
+        await getOrCreateAnonymousUserId();
+      }
+      
+      // IMMEDIATELY save to localStorage/cookie for instant local persistence
+      // Note: Completion state is now embedded in checklistData as 'completed' property on each task
       setCookie(COOKIE_NAME, {
-        checklistData: checklistData,
-        completedTasks: tasksArray
+        checklistData: checklistData
       }, COOKIE_EXPIRY_DAYS);
-      console.log('Saved', tasksArray.length, 'completed tasks to cookie');
+      
+      // Also save to localStorage for faster access
+      try {
+        localStorage.setItem(COOKIE_NAME, JSON.stringify({
+          checklistData: checklistData
+        }));
+      } catch (e) {
+        console.warn('Could not save to localStorage:', e);
+      }
+      
+      console.log('Saved checklist data to local storage (completion state embedded in tasks)');
+      
+      // Then save to backend asynchronously (don't await - fire and forget for better UX)
+      const authToken = stateManager.get('authToken');
+      const currentUser = stateManager.get('currentUser');
+      if (authToken && currentUser) {
+        // Use setTimeout to debounce rapid changes, but ensure it eventually saves
+        if (saveProgress.backendSaveTimeout) {
+          clearTimeout(saveProgress.backendSaveTimeout);
+        }
+        saveProgress.backendSaveTimeout = setTimeout(async () => {
+          try {
+            // Validate checklistData before saving
+            if (!checklistData) {
+              console.warn('⚠️ Cannot save: checklistData is null or undefined');
+              return;
+            }
+            
+            // Deep clone to ensure we're saving the current state
+            const dataToSave = JSON.parse(JSON.stringify(checklistData));
+            
+            const checklistDataLength = Array.isArray(dataToSave) 
+              ? dataToSave.length 
+              : (dataToSave && typeof dataToSave === 'object' ? Object.keys(dataToSave).length : 0);
+            console.log('🔄 Attempting to save to backend...', {
+              checklistDataType: Array.isArray(dataToSave) ? 'array' : typeof dataToSave,
+              checklistDataLength: checklistDataLength,
+              dataSize: JSON.stringify(dataToSave).length + ' bytes'
+            });
+            const success = await saveUserSiteData(dataToSave);
+            if (success) {
+              console.log('✅ Saved to backend successfully');
+            } else {
+              console.error('❌ Failed to save to backend (check console for details)');
+            }
+          } catch (error) {
+            console.error('❌ Error saving to backend:', error);
+            // Could show a notification here if desired
+          }
+        }, 500); // Debounce by 500ms
+        
+        // Also save immediately on page unload to ensure data isn't lost
+        if (!saveProgress.unloadHandlerAdded) {
+          // Use visibilitychange and beforeunload for more reliable saves
+          const performUnloadSave = () => {
+            // Clear any pending timeout and save immediately (synchronously if possible)
+            if (saveProgress.backendSaveTimeout) {
+              clearTimeout(saveProgress.backendSaveTimeout);
+              saveProgress.backendSaveTimeout = null;
+            }
+            // Force immediate save (fire and forget - won't block unload)
+            const currentChecklistData = stateManager.get('checklistData');
+            if (currentChecklistData) {
+              const dataToSave = JSON.parse(JSON.stringify(currentChecklistData));
+              saveUserSiteData(dataToSave).catch(err => {
+                console.error('Failed to save on unload:', err);
+              });
+            }
+          };
+          
+          // Save when page becomes hidden (more reliable than beforeunload)
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+              performUnloadSave();
+            }
+          });
+          
+          // Also try on beforeunload as backup
+          window.addEventListener('beforeunload', performUnloadSave);
+          
+          saveProgress.unloadHandlerAdded = true;
+        }
+      }
     }
 
-    // Render checklist
+    // Render checklist (new array format)
     function renderChecklist() {
       const container = document.getElementById('checklist-container');
       container.innerHTML = '';
 
-      const mainKey = Object.keys(checklistData)[0];
-      const phases = checklistData[mainKey];
-      let isFirstPhase = true;
+      const checklistData = stateManager.get('checklistData');
+      if (!checklistData || !Array.isArray(checklistData) || checklistData.length === 0) {
+        container.innerHTML = '<div class="text-center text-red-600">No checklist data available.</div>';
+        return;
+      }
 
-      for (const phaseKey in phases) {
-        const phase = phases[phaseKey];
-        const categoryElement = createCategoryElement(phaseKey, phase, mainKey, isFirstPhase);
+      // For now, we'll work with the first category (can be extended later)
+      const categoryIndex = 0;
+      const category = dataManager.getCategoryData(categoryIndex);
+      if (!category || !category.phases || category.phases.length === 0) {
+        container.innerHTML = '<div class="text-center text-red-600">No phases available.</div>';
+        return;
+      }
+
+      let isFirstPhase = true;
+      category.phases.forEach((phaseObj, phaseIndex) => {
+        const phaseName = Object.keys(phaseObj)[0];
+        const phase = phaseObj[phaseName];
+        const categoryElement = phaseRenderer.createPhaseElement(phaseName, phase, categoryIndex, phaseIndex, isFirstPhase);
         container.appendChild(categoryElement);
         isFirstPhase = false;
-      }
+      });
       
       // Add "+ Phase" button at the bottom
       const addPhaseButton = document.createElement('button');
       addPhaseButton.className = 'add-button w-full';
       addPhaseButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Phase</span>';
-      addPhaseButton.onclick = () => addNewPhase(mainKey);
+      addPhaseButton.onclick = () => addNewPhase(categoryIndex);
       container.appendChild(addPhaseButton);
     }
 
-    // Create category element (Phase)
-    function createCategoryElement(phaseKey, phase, mainKey, isFirstPhase = true) {
-      const categoryDiv = document.createElement('div');
-      categoryDiv.className = 'space-y-4';
-      categoryDiv.dataset.categoryId = phaseKey;
-
-      // Create swipe container for phase header
-      const phaseHeaderSwipeContainer = document.createElement('div');
-      phaseHeaderSwipeContainer.className = 'swipe-container';
-
-      // Category header
-      const headerDiv = document.createElement('div');
-      headerDiv.className = 'swipe-content flex justify-between items-center cursor-pointer';
-      headerDiv.setAttribute('data-phase-key', phaseKey);
-      headerDiv.setAttribute('data-main-key', mainKey);
-      
-      // Left side with checkbox and title
-      const leftHeaderDiv = document.createElement('div');
-      leftHeaderDiv.className = 'flex items-center space-x-3 flex-1';
-      leftHeaderDiv.onclick = (e) => {
-        // Don't toggle category if clicking on checkbox
-        if (e.target.type !== 'checkbox' && e.target !== leftHeaderDiv.querySelector('input[type="checkbox"]')) {
-          toggleCategory(categoryDiv);
-        }
-      };
-
-      // Phase checkbox
-      const phaseCheckbox = document.createElement('input');
-      phaseCheckbox.type = 'checkbox';
-      phaseCheckbox.className = 'h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary dark:bg-slate-900 dark:border-slate-600';
-      phaseCheckbox.onclick = (e) => {
-        e.stopPropagation();
-        togglePhaseTasks(phaseKey, mainKey, phaseCheckbox.checked);
-      };
-
-      const titleDiv = document.createElement('div');
-      const titleH3 = document.createElement('h3');
-      titleH3.className = 'text-xl font-bold text-slate-900 dark:text-white editable-title';
-      titleH3.textContent = phaseKey;
-      titleH3.contentEditable = false;
-      titleH3.setAttribute('data-phase-key', phaseKey);
-      titleH3.setAttribute('data-main-key', mainKey);
-      
-      // Make title editable on click
-      titleH3.onclick = (e) => {
-        e.stopPropagation();
-        if (!titleH3.contentEditable || titleH3.contentEditable === 'false') {
-          titleH3.contentEditable = true;
-          titleH3.focus();
-          const range = document.createRange();
-          range.selectNodeContents(titleH3);
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
-      };
-      
-      // Save edited title
-      titleH3.onblur = () => {
-        if (titleH3.contentEditable === 'true' || titleH3.contentEditable === true) {
-          titleH3.contentEditable = false;
-          const newTitle = titleH3.textContent.trim();
-          if (newTitle && newTitle !== phaseKey) {
-            // Rename phase in data structure
-            const mainKey = titleH3.getAttribute('data-main-key');
-            const oldPhaseKey = titleH3.getAttribute('data-phase-key');
-            const phase = checklistData[mainKey][oldPhaseKey];
-            delete checklistData[mainKey][oldPhaseKey];
-            checklistData[mainKey][newTitle] = phase;
-            
-            // Update data attributes
-            titleH3.setAttribute('data-phase-key', newTitle);
-            categoryDiv.dataset.categoryId = newTitle;
-            headerDiv.setAttribute('data-phase-key', newTitle);
-            
-            // Update all task IDs that reference this phase
-            const newCompletedTasks = new Set();
-            completedTasks.forEach(taskId => {
-              const parts = taskId.split('::');
-              if (parts.length >= 2 && parts[1] === oldPhaseKey) {
-                parts[1] = newTitle;
-                newCompletedTasks.add(parts.join('::'));
-              } else {
-                newCompletedTasks.add(taskId);
-              }
-            });
-            completedTasks = newCompletedTasks;
-            
-            saveProgress();
-            updateOverallProgress();
-            updateCategoryProgress(newTitle);
-          } else if (!newTitle) {
-            titleH3.textContent = phaseKey;
-          }
-        }
-      };
-      
-      // Prevent Enter key from creating new line, save instead
-      titleH3.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          titleH3.blur();
-        }
-        if (e.key === 'Escape') {
-          titleH3.textContent = phaseKey;
-          titleH3.contentEditable = false;
-          titleH3.blur();
-        }
-      };
-
-      titleDiv.appendChild(titleH3);
-      leftHeaderDiv.appendChild(phaseCheckbox);
-      leftHeaderDiv.appendChild(titleDiv);
-
-      const progressDiv = document.createElement('div');
-      progressDiv.className = 'flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400';
-      progressDiv.innerHTML = `
-        <span class="category-progress-text">0% Complete</span>
-        <span class="material-symbols-outlined text-base category-caret">${isFirstPhase ? 'expand_more' : 'chevron_right'}</span>
-      `;
-      progressDiv.onclick = (e) => {
-        e.stopPropagation();
-        toggleCategory(categoryDiv);
-      };
-
-      headerDiv.appendChild(leftHeaderDiv);
-      headerDiv.appendChild(progressDiv);
-
-      // Create delete button for phase
-      const phaseDeleteButton = document.createElement('div');
-      phaseDeleteButton.className = 'swipe-delete';
-      phaseDeleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
-      phaseDeleteButton.onclick = (e) => {
-        e.stopPropagation();
-        deletePhase(mainKey, phaseKey, categoryDiv);
-      };
-
-      phaseHeaderSwipeContainer.appendChild(headerDiv);
-      phaseHeaderSwipeContainer.appendChild(phaseDeleteButton);
-
-      // Add swipe functionality to phase header
-      addSwipeHandlers(headerDiv, phaseHeaderSwipeContainer);
-
-      // Progress bar
-      const progressBarDiv = document.createElement('div');
-      progressBarDiv.className = 'w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2';
-      progressBarDiv.innerHTML = '<div class="category-progress-bar bg-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>';
-
-      // Content container (collapsible)
-      const contentDiv = document.createElement('div');
-      contentDiv.className = 'category-content space-y-6';
-      contentDiv.style.display = isFirstPhase ? 'block' : 'none'; // First phase expanded, others collapsed
-
-      // Render sub-sections
-      for (const subSectionKey in phase) {
-        const subSection = phase[subSectionKey];
-        const subSectionElement = createSubSectionElement(subSectionKey, subSection, mainKey, phaseKey);
-        contentDiv.appendChild(subSectionElement);
-      }
-
-      // Add "+ Category" button as last item in phase
-      const addCategoryButton = document.createElement('button');
-      addCategoryButton.className = 'add-button w-full';
-      addCategoryButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Category</span>';
-      addCategoryButton.onclick = () => addNewCategory(mainKey, phaseKey, contentDiv);
-      contentDiv.appendChild(addCategoryButton);
-
-      categoryDiv.appendChild(phaseHeaderSwipeContainer);
-      categoryDiv.appendChild(progressBarDiv);
-      categoryDiv.appendChild(contentDiv);
-
-      // Update category progress and checkbox state after rendering
-      setTimeout(() => {
-        updateCategoryProgress(phaseKey);
-        updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
-      }, 0);
-
-      return categoryDiv;
+    // Legacy function - now uses phaseRenderer
+    function createCategoryElement(phaseName, phase, categoryIndex, phaseIndex, isFirstPhase = true) {
+      return phaseRenderer.createPhaseElement(phaseName, phase, categoryIndex, phaseIndex, isFirstPhase);
     }
-
-    // Create sub-section element
-    function createSubSectionElement(subSectionKey, subSection, mainKey, phaseKey) {
-      const subSectionDiv = document.createElement('div');
-      subSectionDiv.className = 'space-y-4';
-
-      // Create swipe container for sub-section header
-      const subSectionSwipeContainer = document.createElement('div');
-      subSectionSwipeContainer.className = 'swipe-container';
-
-      const subSectionTitle = document.createElement('h4');
-      subSectionTitle.className = 'swipe-content text-lg font-semibold text-slate-800 dark:text-slate-200 py-2 cursor-pointer editable-title';
-      subSectionTitle.textContent = subSectionKey;
-      subSectionTitle.contentEditable = false;
-      subSectionTitle.setAttribute('data-subsection-key', subSectionKey);
-      subSectionTitle.setAttribute('data-phase-key', phaseKey);
-      subSectionTitle.setAttribute('data-main-key', mainKey);
+    
+    // Setup drag and drop for phases
+    function setupPhaseDragAndDrop(element, categoryIndex, phaseIndex) {
+      element.addEventListener('dragstart', (e) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', JSON.stringify({ categoryIndex, phaseIndex }));
+        element.classList.add('dragging');
+      });
       
-      // Make title editable on click
-      subSectionTitle.onclick = (e) => {
-        e.stopPropagation();
-        if (!subSectionTitle.classList.contains('swiped') && (!subSectionTitle.contentEditable || subSectionTitle.contentEditable === 'false')) {
-          subSectionTitle.contentEditable = true;
-          subSectionTitle.focus();
-          const range = document.createRange();
-          range.selectNodeContents(subSectionTitle);
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
-      };
-      
-      // Save edited title
-      subSectionTitle.onblur = () => {
-        if (subSectionTitle.contentEditable === 'true' || subSectionTitle.contentEditable === true) {
-          subSectionTitle.contentEditable = false;
-          const newTitle = subSectionTitle.textContent.trim();
-          if (newTitle && newTitle !== subSectionKey) {
-            // Rename sub-section in data structure
-            const mainKey = subSectionTitle.getAttribute('data-main-key');
-            const phaseKey = subSectionTitle.getAttribute('data-phase-key');
-            const oldSubSectionKey = subSectionTitle.getAttribute('data-subsection-key');
-            const subSection = checklistData[mainKey][phaseKey][oldSubSectionKey];
-            delete checklistData[mainKey][phaseKey][oldSubSectionKey];
-            checklistData[mainKey][phaseKey][newTitle] = subSection;
-            
-            // Update data attributes
-            subSectionTitle.setAttribute('data-subsection-key', newTitle);
-            
-            // Update all task IDs that reference this sub-section
-            const newCompletedTasks = new Set();
-            completedTasks.forEach(taskId => {
-              const parts = taskId.split('::');
-              if (parts.length >= 3 && parts[1] === phaseKey && parts[2] === oldSubSectionKey) {
-                parts[2] = newTitle;
-                newCompletedTasks.add(parts.join('::'));
-              } else {
-                newCompletedTasks.add(taskId);
-              }
-            });
-            completedTasks = newCompletedTasks;
-            
-            saveProgress();
-            updateOverallProgress();
-            updateCategoryProgress(phaseKey);
-          } else if (!newTitle) {
-            subSectionTitle.textContent = subSectionKey;
-          }
-        }
-      };
-      
-      // Prevent Enter key from creating new line, save instead
-      subSectionTitle.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          subSectionTitle.blur();
-        }
-        if (e.key === 'Escape') {
-          subSectionTitle.textContent = subSectionKey;
-          subSectionTitle.contentEditable = false;
-          subSectionTitle.blur();
-        }
-      };
-
-      // Create delete button for sub-section
-      const subSectionDeleteButton = document.createElement('div');
-      subSectionDeleteButton.className = 'swipe-delete';
-      subSectionDeleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
-      subSectionDeleteButton.onclick = (e) => {
-        e.stopPropagation();
-        deleteSubSection(mainKey, phaseKey, subSectionKey, subSectionDiv);
-      };
-
-      subSectionSwipeContainer.appendChild(subSectionTitle);
-      subSectionSwipeContainer.appendChild(subSectionDeleteButton);
-
-      // Add swipe functionality to sub-section header
-      addSwipeHandlers(subSectionTitle, subSectionSwipeContainer);
-
-      subSectionDiv.appendChild(subSectionSwipeContainer);
-
-      // Tasks container
-      const tasksContainer = document.createElement('div');
-      tasksContainer.className = 'divide-y divide-slate-200 dark:divide-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800';
-
-      if (subSection.tasks) {
-        subSection.tasks.forEach((task, taskIndex) => {
-          // Main task
-          const taskRow = createTaskRow(task, mainKey, phaseKey, subSectionKey, taskIndex);
-          tasksContainer.appendChild(taskRow);
-
-          // Subtasks if any
-          if (task.subtasks) {
-            task.subtasks.forEach((subtask, subtaskIndex) => {
-              const subtaskRow = createTaskRow(subtask, mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex, true);
-              tasksContainer.appendChild(subtaskRow);
-            });
-          }
+      element.addEventListener('dragend', (e) => {
+        element.classList.remove('dragging');
+        document.querySelectorAll('.draggable-phase').forEach(el => {
+          el.classList.remove('drag-over');
         });
-      }
+      });
       
-      // Add "+ Task" button as last item in tasks container
-      const addTaskButton = document.createElement('button');
-      addTaskButton.className = 'add-button w-full';
-      addTaskButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Task</span>';
-      addTaskButton.onclick = () => showAddTaskDialog(mainKey, phaseKey, subSectionKey, tasksContainer, subSectionDiv);
-      tasksContainer.appendChild(addTaskButton);
-
-      subSectionDiv.appendChild(tasksContainer);
-      return subSectionDiv;
+      element.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        // Add visual feedback
+        if (!element.classList.contains('dragging')) {
+          element.classList.add('drag-over');
+        }
+      });
+      
+      element.addEventListener('dragleave', (e) => {
+        element.classList.remove('drag-over');
+      });
+      
+      element.addEventListener('drop', (e) => {
+        e.preventDefault();
+        element.classList.remove('drag-over');
+        
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+          const sourceCategoryIndex = data.categoryIndex;
+          const sourcePhaseIndex = data.phaseIndex;
+          const targetCategoryIndex = parseInt(element.dataset.categoryIndex);
+          const targetPhaseIndex = parseInt(element.dataset.phaseIndex);
+          
+          if (sourceCategoryIndex === targetCategoryIndex && sourcePhaseIndex !== targetPhaseIndex) {
+            // Find the new index based on DOM position
+            const container = element.parentElement;
+            const allPhases = Array.from(container.querySelectorAll('.draggable-phase'));
+            const draggedElement = document.querySelector('.dragging');
+            const targetIndex = Array.from(container.children).indexOf(element);
+            const sourceIndex = Array.from(container.children).indexOf(draggedElement);
+            
+            // Update DOM first for visual feedback
+            if (targetIndex < sourceIndex) {
+              container.insertBefore(draggedElement, element);
+            } else {
+              container.insertBefore(draggedElement, element.nextSibling);
+            }
+            
+            // Then update data structure
+            reorderPhase(targetCategoryIndex, sourcePhaseIndex, targetPhaseIndex);
+          }
+        } catch (error) {
+          console.error('Error parsing drag data:', error);
+        }
+      });
+    }
+    
+    // Get element after which to insert dragged element
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.draggable-phase:not(.dragging)')];
+      
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+    
+    // Reorder phase in data structure
+    function reorderPhase(categoryIndex, fromIndex, toIndex) {
+      if (dataManager.reorderPhase(categoryIndex, fromIndex, toIndex)) {
+        saveProgress();
+        renderChecklist();
+      }
+    }
+    
+    // Old drag-and-drop setup functions removed - now handled by DragDropManager
+    // setupSubcategoryDragAndDrop, setupTaskDragAndDrop, setupTaskContainerDragAndDrop, setupPhaseDragAndDrop
+    // are now handled by dragDropManager
+    
+    // Legacy function for backwards compatibility - now uses dragDropManager
+    function setupSubcategoryDragAndDrop(element, categoryIndex, phaseIndex, subcategoryIndex) {
+      dragDropManager.setupSubcategoryDragAndDrop(element, categoryIndex, phaseIndex, subcategoryIndex);
+    }
+    
+    function setupTaskContainerDragAndDrop(container, categoryIndex, phaseIndex, subcategoryIndex) {
+      dragDropManager.setupTaskContainerDragAndDrop(container, categoryIndex, phaseIndex, subcategoryIndex);
+    }
+    
+    function setupTaskDragAndDrop(element, categoryIndex, phaseIndex, subcategoryIndex, taskIndex) {
+      dragDropManager.setupTaskDragAndDrop(element, categoryIndex, phaseIndex, subcategoryIndex, taskIndex);
+    }
+    
+    function setupPhaseDragAndDrop(element, categoryIndex, phaseIndex) {
+      dragDropManager.setupPhaseDragAndDrop(element, categoryIndex, phaseIndex);
+    }
+    
+    // Reorder subcategory in data structure
+    function reorderSubcategory(categoryIndex, phaseIndex, fromIndex, toIndex) {
+      if (dataManager.reorderSubcategory(categoryIndex, phaseIndex, fromIndex, toIndex)) {
+        saveProgress();
+        renderChecklist();
+      }
+    }
+    
+    // Setup drag and drop for tasks container (handles drops on empty space)
+    function setupTaskContainerDragAndDrop(container, categoryIndex, phaseIndex, subcategoryIndex) {
+      container.addEventListener('dragover', (e) => {
+        // Only handle if dragging a task from the same subcategory
+        try {
+          const dragData = e.dataTransfer.getData('text/plain');
+          if (!dragData) {
+            // Try to get it from the drag event
+            const items = e.dataTransfer.items;
+            if (items && items.length > 0) {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+            }
+            return;
+          }
+          
+          const data = JSON.parse(dragData);
+          if (data.categoryIndex === categoryIndex && 
+              data.phaseIndex === phaseIndex && 
+              data.subcategoryIndex === subcategoryIndex) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+          }
+        } catch (error) {
+          // Ignore parse errors, but still allow drop
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        }
+      });
+      
+      container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+          const sourceCategoryIndex = data.categoryIndex;
+          const sourcePhaseIndex = data.phaseIndex;
+          const sourceSubcategoryIndex = data.subcategoryIndex;
+          const sourceTaskIndex = data.taskIndex;
+          
+          // Find the task row that was dropped on (or the last task if dropped on empty space)
+          const taskRows = Array.from(container.querySelectorAll('.draggable-task'));
+          let targetTaskIndex = taskRows.length; // Default to last position (after all tasks)
+          
+          // Try to find which task row was dropped on based on Y position
+          for (let i = 0; i < taskRows.length; i++) {
+            const rect = taskRows[i].getBoundingClientRect();
+            const midPoint = rect.top + (rect.height / 2);
+            if (e.clientY <= midPoint) {
+              targetTaskIndex = parseInt(taskRows[i].dataset.taskIndex);
+              break;
+            }
+            if (i === taskRows.length - 1) {
+              // Dropped after last task
+              targetTaskIndex = parseInt(taskRows[i].dataset.taskIndex) + 1;
+            }
+          }
+          
+          if (sourceCategoryIndex === categoryIndex && 
+              sourcePhaseIndex === phaseIndex && 
+              sourceSubcategoryIndex === subcategoryIndex && 
+              sourceTaskIndex !== targetTaskIndex) {
+            reorderTask(categoryIndex, phaseIndex, subcategoryIndex, sourceTaskIndex, targetTaskIndex);
+          }
+        } catch (error) {
+          console.error('Error handling container drop:', error);
+        }
+      });
+    }
+    
+    // Setup drag and drop for tasks (called from createTaskRow)
+    function setupTaskDragAndDrop(element, categoryIndex, phaseIndex, subcategoryIndex, taskIndex) {
+      element.addEventListener('dragstart', (e) => {
+        // Only allow drag from the drag handle
+        if (e.target.classList.contains('drag-handle') || e.target.closest('.drag-handle')) {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', JSON.stringify({ categoryIndex, phaseIndex, subcategoryIndex, taskIndex }));
+          element.classList.add('dragging');
+        } else {
+          e.preventDefault();
+        }
+      });
+      
+      element.addEventListener('dragend', (e) => {
+        element.classList.remove('dragging');
+        // Remove drag-over class from all task rows
+        document.querySelectorAll('.draggable-task').forEach(el => {
+          el.classList.remove('drag-over');
+        });
+      });
+      
+      element.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        // Add visual feedback
+        if (!element.classList.contains('dragging')) {
+          element.classList.add('drag-over');
+        }
+      });
+      
+      element.addEventListener('dragleave', (e) => {
+        element.classList.remove('drag-over');
+      });
+      
+      element.addEventListener('drop', (e) => {
+        e.preventDefault();
+        element.classList.remove('drag-over');
+        
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+          const sourceCategoryIndex = data.categoryIndex;
+          const sourcePhaseIndex = data.phaseIndex;
+          const sourceSubcategoryIndex = data.subcategoryIndex;
+          const sourceTaskIndex = data.taskIndex;
+          const targetCategoryIndex = parseInt(element.dataset.categoryIndex);
+          const targetPhaseIndex = parseInt(element.dataset.phaseIndex);
+          const targetSubcategoryIndex = parseInt(element.dataset.subcategoryIndex);
+          const targetTaskIndex = parseInt(element.dataset.taskIndex);
+          
+          if (sourceCategoryIndex === targetCategoryIndex && 
+              sourcePhaseIndex === targetPhaseIndex && 
+              sourceSubcategoryIndex === targetSubcategoryIndex && 
+              sourceTaskIndex !== targetTaskIndex) {
+            reorderTask(categoryIndex, phaseIndex, subcategoryIndex, sourceTaskIndex, targetTaskIndex);
+          }
+        } catch (error) {
+          console.error('Error parsing drag data:', error);
+        }
+      });
+    }
+    
+    // Reorder task in data structure
+    function reorderTask(categoryIndex, phaseIndex, subcategoryIndex, fromIndex, toIndex) {
+      if (dataManager.reorderTask(categoryIndex, phaseIndex, subcategoryIndex, fromIndex, toIndex)) {
+        saveProgress();
+        renderChecklist();
+      }
     }
 
-    // Create task row
-    function createTaskRow(task, mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex = null, isSubtask = false) {
-      const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
-      const isCompleted = isTaskCompleted(taskId);
+    // Legacy function - now uses subcategoryRenderer
+    function createSubSectionElement(subSectionKey, subSection, categoryIndex, phaseIndex, subcategoryIndex) {
+      return subcategoryRenderer.createSubcategoryElement(subSectionKey, subSection, categoryIndex, phaseIndex, subcategoryIndex);
+    }
+    
+    // Create task row (new array format)
+    function createTaskRow(task, categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex = null, isSubtask = false) {
+      const isCompleted = task.completed === true;
       const hasLinks = task.links && task.links.length > 0;
 
       // Create swipe container
@@ -1154,21 +2697,26 @@
 
       // Create swipe content (the actual row)
       const row = document.createElement('div');
-      row.className = `swipe-content flex items-center justify-between p-4 transition-colors duration-150 ${hasLinks ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer' : ''}`;
-      row.setAttribute('data-task-id', taskId);
-      row.setAttribute('data-main-key', mainKey);
-      row.setAttribute('data-phase-key', phaseKey);
-      row.setAttribute('data-subsection-key', subSectionKey);
+      row.className = `swipe-content flex items-center justify-between p-4 transition-colors duration-150 draggable-task ${hasLinks ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer' : ''}`;
+      row.setAttribute('data-category-index', categoryIndex);
+      row.setAttribute('data-phase-index', phaseIndex);
+      row.setAttribute('data-subcategory-index', subcategoryIndex);
       row.setAttribute('data-task-index', taskIndex);
+      row.setAttribute('data-task-name', task.name); // Store task name for reference
+      row.draggable = true;
       if (subtaskIndex !== null) {
         row.setAttribute('data-subtask-index', subtaskIndex);
       }
       
-      // Make entire row clickable (except checkbox) to show links
+      // Make entire row clickable (except checkbox, drag handle) to show links
       if (hasLinks) {
         row.onclick = (e) => {
-          // Don't trigger if clicking checkbox, label (for editing), or if swiped
-          if (e.target.type === 'checkbox' || e.target.contentEditable === 'true' || row.classList.contains('swiped')) {
+          // Don't trigger if clicking checkbox, drag handle, label (for editing), or if swiped
+          if (e.target.type === 'checkbox' || 
+              e.target.classList.contains('drag-handle') || 
+              e.target.closest('.drag-handle') ||
+              e.target.contentEditable === 'true' || 
+              row.classList.contains('swiped')) {
             return;
           }
           showTaskLinks(task.links, task.name, row);
@@ -1178,21 +2726,28 @@
       const leftDiv = document.createElement('div');
       leftDiv.className = 'flex items-center space-x-4 flex-1';
       
+      // Drag handle for task (left-most item)
+      const dragHandle = document.createElement('span');
+      dragHandle.className = 'material-symbols-outlined drag-handle text-slate-400 hover:text-slate-600 cursor-move mr-2';
+      dragHandle.textContent = 'drag_indicator';
+      dragHandle.title = 'Drag to reorder';
+      dragHandle.style.pointerEvents = 'auto'; // Ensure drag handle is interactive
+      
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.className = 'h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary dark:bg-slate-900 dark:border-slate-600';
       checkbox.checked = isCompleted;
       checkbox.onclick = (e) => {
         e.stopPropagation();
-        toggleTask(taskId);
-        updateTaskRow(row, taskId, task.name);
+        toggleTask(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex);
+        updateTaskRow(row, task);
       };
 
       const label = document.createElement('span');
       label.className = `text-slate-700 dark:text-slate-300 ${isCompleted ? 'strikethrough' : ''} ${hasLinks ? 'cursor-pointer' : 'cursor-text'}`;
       label.textContent = task.name;
       label.contentEditable = false;
-      label.setAttribute('data-task-id', taskId); // Store taskId for reference
+      label.setAttribute('data-task-name', task.name); // Store task name for reference
       
       // Make label editable on double-click
       label.ondblclick = (e) => {
@@ -1215,17 +2770,12 @@
         if (label.contentEditable === 'true' || label.contentEditable === true) {
           label.contentEditable = false;
           const newText = label.textContent.trim();
-          const currentTaskName = subtaskIndex !== null 
-            ? checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].subtasks[subtaskIndex].name
-            : checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].name;
+          const taskObj = getTaskObject(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex);
+          const currentTaskName = taskObj ? taskObj.name : task.name;
           
-          if (newText && newText !== currentTaskName) {
+          if (newText && newText !== currentTaskName && taskObj) {
             // Update the task name in the data structure
-            if (subtaskIndex !== null) {
-              checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].subtasks[subtaskIndex].name = newText;
-            } else {
-              checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].name = newText;
-            }
+            taskObj.name = newText;
             saveProgress();
           } else if (!newText) {
             // Restore original text if empty
@@ -1242,15 +2792,15 @@
         }
         // Allow Escape to cancel editing
         if (e.key === 'Escape') {
-          const currentTaskName = subtaskIndex !== null 
-            ? checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].subtasks[subtaskIndex].name
-            : checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex].name;
+          const taskObj = getTaskObject(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex);
+          const currentTaskName = taskObj ? taskObj.name : task.name;
           label.textContent = currentTaskName;
           label.contentEditable = false;
           label.blur();
         }
       };
 
+      leftDiv.appendChild(dragHandle);
       leftDiv.appendChild(checkbox);
       leftDiv.appendChild(label);
 
@@ -1270,7 +2820,7 @@
       deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
       deleteButton.onclick = (e) => {
         e.stopPropagation();
-        deleteTask(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex, swipeContainer);
+        deleteTask(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex, swipeContainer);
       };
 
       swipeContainer.appendChild(row);
@@ -1278,15 +2828,18 @@
 
       // Add swipe functionality
       addSwipeHandlers(row, swipeContainer);
+      
+      // Setup drag and drop for task
+      setupTaskDragAndDrop(row, categoryIndex, phaseIndex, subcategoryIndex, taskIndex);
 
       return swipeContainer;
     }
 
     // Update task row appearance
-    function updateTaskRow(row, taskId, taskName) {
+    function updateTaskRow(row, task) {
       const checkbox = row.querySelector('input[type="checkbox"]');
-      const label = row.querySelector(`span[data-task-id="${taskId}"]`);
-      const isCompleted = isTaskCompleted(taskId);
+      const label = row.querySelector(`span[data-task-name="${task.name}"]`);
+      const isCompleted = task.completed === true;
 
       if (checkbox) checkbox.checked = isCompleted;
       if (label) {
@@ -1422,43 +2975,56 @@
 
     }
 
-    // Delete task from checklist
-    function deleteTask(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex, swipeContainer) {
-      if (!checklistData || !checklistData[mainKey] || !checklistData[mainKey][phaseKey] || !checklistData[mainKey][phaseKey][subSectionKey]) {
+    // Delete task from checklist (new array format)
+    function deleteTask(categoryIndex, phaseIndex, subcategoryIndex, taskIndex, subtaskIndex, swipeContainer) {
+      const { items } = getSubcategoryData(categoryIndex, phaseIndex, subcategoryIndex);
+      if (!items || !Array.isArray(items)) {
         console.error('Invalid task data structure');
         return;
       }
 
-      const subSection = checklistData[mainKey][phaseKey][subSectionKey];
+      // Filter to only tasks (not nested containers) for deletion
+      const taskItems = items.filter(item => isTaskObject(item));
+      if (taskIndex >= taskItems.length) return;
+      
+      // Find the actual index in the items array
+      let actualTaskIndex = -1;
+      let taskCount = 0;
+      
+      for (let i = 0; i < items.length; i++) {
+        if (isTaskObject(items[i])) {
+          if (taskCount === taskIndex) {
+            actualTaskIndex = i;
+            break;
+          }
+          taskCount++;
+        }
+      }
+      
+      if (actualTaskIndex === -1) return;
+      
+      const task = items[actualTaskIndex];
       
       if (subtaskIndex !== null) {
-        // Delete a subtask
-        if (subSection.tasks && subSection.tasks[taskIndex] && subSection.tasks[taskIndex].subtasks) {
-          const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
-          completedTasks.delete(subtaskId);
-          subSection.tasks[taskIndex].subtasks.splice(subtaskIndex, 1);
-          
-          // If no subtasks left, remove the subtasks array
-          if (subSection.tasks[taskIndex].subtasks.length === 0) {
-            delete subSection.tasks[taskIndex].subtasks;
+        // Delete a subtask - find the subtask in nested arrays
+        for (const [key, value] of Object.entries(task)) {
+          if (key === 'links' || key === 'tags') continue;
+          if (Array.isArray(value)) {
+            let currentSubtaskIndex = 0;
+            for (let i = 0; i < value.length; i++) {
+              if (isTaskObject(value[i])) {
+                if (currentSubtaskIndex === subtaskIndex) {
+                  value.splice(i, 1);
+                  break;
+                }
+                currentSubtaskIndex++;
+              }
+            }
           }
         }
       } else {
-        // Delete a main task
-        if (subSection.tasks) {
-          const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
-          completedTasks.delete(taskId);
-          
-          // Also delete all subtask IDs if they exist
-          if (subSection.tasks[taskIndex] && subSection.tasks[taskIndex].subtasks) {
-            subSection.tasks[taskIndex].subtasks.forEach((_, subtaskIdx) => {
-              const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIdx);
-              completedTasks.delete(subtaskId);
-            });
-          }
-          
-          subSection.tasks.splice(taskIndex, 1);
-        }
+        // Delete the main task
+        items.splice(actualTaskIndex, 1);
       }
 
       // Save updated data
@@ -1469,46 +3035,34 @@
       
       // Update progress
       updateOverallProgress();
-      updateCategoryProgress(phaseKey);
+      updateCategoryProgress(categoryIndex, phaseIndex);
       
-      // Update phase checkbox state
-      const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
-      if (categoryDiv) {
-        const phaseCheckbox = categoryDiv.querySelector('input[type="checkbox"]');
+      // Update phase and subcategory checkbox states
+      const phaseCheckbox = document.querySelector(
+        `[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"] input[type="checkbox"]`
+      );
         if (phaseCheckbox) {
-          updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
-        }
+        updatePhaseCheckboxState(categoryIndex, phaseIndex, phaseCheckbox);
+      }
+      
+      const subcategoryCheckbox = document.querySelector(
+        `[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"][data-subcategory-index="${subcategoryIndex}"] input[type="checkbox"]`
+      );
+      if (subcategoryCheckbox) {
+        updateSubcategoryCheckboxState(categoryIndex, phaseIndex, subcategoryIndex, subcategoryCheckbox);
       }
     }
 
-    // Delete sub-section and all its tasks
-    function deleteSubSection(mainKey, phaseKey, subSectionKey, subSectionDiv) {
-      if (!checklistData || !checklistData[mainKey] || !checklistData[mainKey][phaseKey] || !checklistData[mainKey][phaseKey][subSectionKey]) {
+    // Delete sub-section and all its tasks (new array format)
+    function deleteSubSection(categoryIndex, phaseIndex, subcategoryIndex, subSectionDiv) {
+      const { subcategories } = getPhaseData(categoryIndex, phaseIndex);
+      if (!subcategories || subcategoryIndex >= subcategories.length) {
         console.error('Invalid sub-section data structure');
         return;
       }
 
-      const phase = checklistData[mainKey][phaseKey];
-      const subSection = phase[subSectionKey];
-
-      // Delete all task IDs from completedTasks
-      if (subSection.tasks) {
-        subSection.tasks.forEach((task, taskIndex) => {
-          const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
-          completedTasks.delete(taskId);
-
-          // Also delete all subtask IDs if they exist
-          if (task.subtasks) {
-            task.subtasks.forEach((_, subtaskIndex) => {
-              const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
-              completedTasks.delete(subtaskId);
-            });
-          }
-        });
-      }
-
-      // Delete the sub-section from the data structure
-      delete phase[subSectionKey];
+      // Delete the subcategory from the data structure
+      subcategories.splice(subcategoryIndex, 1);
 
       // Save updated data
       saveProgress();
@@ -1518,48 +3072,27 @@
 
       // Update progress
       updateOverallProgress();
-      updateCategoryProgress(phaseKey);
+      updateCategoryProgress(categoryIndex, phaseIndex);
 
       // Update phase checkbox state
-      const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
-      if (categoryDiv) {
-        const phaseCheckbox = categoryDiv.querySelector('input[type="checkbox"]');
+      const phaseCheckbox = document.querySelector(
+        `[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"] input[type="checkbox"]`
+      );
         if (phaseCheckbox) {
-          updatePhaseCheckboxState(phaseKey, mainKey, phaseCheckbox);
-        }
+        updatePhaseCheckboxState(categoryIndex, phaseIndex, phaseCheckbox);
       }
     }
 
-    // Delete phase and all its sub-sections and tasks
-    function deletePhase(mainKey, phaseKey, categoryDiv) {
-      if (!checklistData || !checklistData[mainKey] || !checklistData[mainKey][phaseKey]) {
+    // Delete phase and all its sub-sections and tasks (new array format)
+    function deletePhase(categoryIndex, phaseIndex, categoryDiv) {
+      const { phases } = getCategoryData(categoryIndex);
+      if (!phases || phaseIndex >= phases.length) {
         console.error('Invalid phase data structure');
         return;
       }
 
-      const phase = checklistData[mainKey][phaseKey];
-
-      // Delete all task IDs from completedTasks for this entire phase
-      for (const subSectionKey in phase) {
-        const subSection = phase[subSectionKey];
-        if (subSection.tasks) {
-          subSection.tasks.forEach((task, taskIndex) => {
-            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
-            completedTasks.delete(taskId);
-
-            // Also delete all subtask IDs if they exist
-            if (task.subtasks) {
-              task.subtasks.forEach((_, subtaskIndex) => {
-                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
-                completedTasks.delete(subtaskId);
-              });
-            }
-          });
-        }
-      }
-
       // Delete the phase from the data structure
-      delete checklistData[mainKey][phaseKey];
+      phases.splice(phaseIndex, 1);
 
       // Save updated data
       saveProgress();
@@ -1636,13 +3169,14 @@
       const linksContainer = document.getElementById('links-container');
       const drawerOverlay = document.getElementById('drawer-overlay');
       
-      // Extract task info from taskRow if available
+      // Extract task info from taskRow if available (new array format)
       if (taskRow) {
-        const mainKey = taskRow.getAttribute('data-main-key');
-        const phaseKey = taskRow.getAttribute('data-phase-key');
-        const subSectionKey = taskRow.getAttribute('data-subsection-key');
-        const taskIndex = parseInt(taskRow.getAttribute('data-task-index'));
-        currentTaskInfo = { mainKey, phaseKey, subSectionKey, taskIndex };
+        const categoryIndex = parseInt(taskRow.getAttribute('data-category-index')) || 0;
+        const phaseIndex = parseInt(taskRow.getAttribute('data-phase-index')) || 0;
+        const subcategoryIndex = parseInt(taskRow.getAttribute('data-subcategory-index')) || 0;
+        const taskIndex = parseInt(taskRow.getAttribute('data-task-index')) || 0;
+        const taskName = taskRow.getAttribute('data-task-name');
+        currentTaskInfo = { categoryIndex, phaseIndex, subcategoryIndex, taskIndex, taskName };
       } else {
         currentTaskInfo = null;
       }
@@ -1678,7 +3212,12 @@
           addResourceButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>+ Resource</span>';
           addResourceButton.onclick = () => {
             if (currentTaskInfo) {
+              // Use new structure if available
+              if (currentTaskInfo.categoryIndex !== undefined) {
+                showAddResourceDialog(currentTaskInfo.categoryIndex, currentTaskInfo.phaseIndex, currentTaskInfo.subcategoryIndex, currentTaskInfo.taskIndex);
+              } else {
               showAddResourceDialog(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex);
+              }
             }
           };
           linksList.appendChild(addResourceButton);
@@ -1807,7 +3346,12 @@
           const resource = typeof link === 'string' 
             ? { title: linkTitle, link_url: linkUrl, image_url: linkImage, tags: linkTags }
             : link;
+          // Use new structure if available, otherwise fall back to old structure
+          if (currentTaskInfo && currentTaskInfo.categoryIndex !== undefined) {
+            showEditResourceDialog(currentTaskInfo.categoryIndex, currentTaskInfo.phaseIndex, currentTaskInfo.subcategoryIndex, currentTaskInfo.taskIndex, linkIndex, resource, swipeContainer);
+          } else if (currentTaskInfo) {
           showEditResourceDialog(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex, linkIndex, resource, swipeContainer);
+          }
         };
         
         // Create delete button
@@ -1816,7 +3360,12 @@
         deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
         deleteButton.onclick = (e) => {
           e.stopPropagation();
+          // Use new structure if available, otherwise fall back to old structure
+          if (currentTaskInfo && currentTaskInfo.categoryIndex !== undefined) {
+            deleteResource(currentTaskInfo.categoryIndex, currentTaskInfo.phaseIndex, currentTaskInfo.subcategoryIndex, currentTaskInfo.taskIndex, linkIndex, swipeContainer);
+          } else if (currentTaskInfo) {
           deleteResource(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex, linkIndex, swipeContainer);
+          }
         };
         
         swipeContainer.appendChild(card);
@@ -1836,7 +3385,12 @@
         addResourceButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Resource</span>';
         addResourceButton.onclick = () => {
           if (currentTaskInfo) {
+            // Use new structure if available, otherwise fall back to old structure
+            if (currentTaskInfo.categoryIndex !== undefined) {
+              showAddResourceDialog(currentTaskInfo.categoryIndex, currentTaskInfo.phaseIndex, currentTaskInfo.subcategoryIndex, currentTaskInfo.taskIndex);
+            } else {
             showAddResourceDialog(currentTaskInfo.mainKey, currentTaskInfo.phaseKey, currentTaskInfo.subSectionKey, currentTaskInfo.taskIndex);
+            }
           }
         };
         linksList.appendChild(addResourceButton);
@@ -1846,18 +3400,34 @@
       openDrawer();
     }
     
-    // Delete resource from task
-    function deleteResource(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, swipeContainer) {
-      const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
-      if (task.links && task.links[linkIndex]) {
+    // Delete resource from task (supports both old and new structure)
+    function deleteResource(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex, linkIndex, swipeContainer) {
+      // Determine if using new structure (numeric indices) or old structure (string keys)
+      const isNewStructure = typeof categoryIndexOrMainKey === 'number';
+      let task;
+      
+      if (isNewStructure) {
+        task = getTaskObject(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex);
+      } else {
+        // Old structure
+        if (checklistData[categoryIndexOrMainKey] && checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey] && 
+            checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey][subcategoryIndexOrSubSectionKey] &&
+            checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey][subcategoryIndexOrSubSectionKey].tasks) {
+          task = checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey][subcategoryIndexOrSubSectionKey].tasks[taskIndex];
+        }
+      }
+      
+      if (task && task.links && task.links[linkIndex]) {
         task.links.splice(linkIndex, 1);
         saveProgress();
         swipeContainer.remove();
         
         // Refresh the links display
-        const taskRow = document.querySelector(`[data-task-id="${getTaskId(mainKey, phaseKey, subSectionKey, taskIndex)}"]`)?.closest('.swipe-content');
+        if (currentTaskInfo && currentTaskInfo.taskName) {
+          const taskRow = document.querySelector(`[data-task-name="${currentTaskInfo.taskName}"]`)?.closest('.swipe-content');
         if (taskRow) {
           showTaskLinks(task.links, task.name, taskRow);
+          }
         }
       }
     }
@@ -1907,87 +3477,156 @@
         caret.textContent = 'expand_more';
       }
     }
+    
+    // Toggle subcategory expand/collapse
+    function toggleSubcategory(subcategoryDiv) {
+      const content = subcategoryDiv.querySelector('.subcategory-content');
+      const caret = subcategoryDiv.querySelector('.subcategory-caret');
+      if (!content || !caret) return;
+      
+      const isExpanded = content.style.display !== 'none';
+
+      if (isExpanded) {
+        content.style.display = 'none';
+        caret.textContent = 'chevron_right';
+      } else {
+        content.style.display = 'block';
+        caret.textContent = 'expand_more';
+      }
+    }
 
     // Calculate category progress
-    function calculateCategoryProgress(phaseKey) {
-      const mainKey = Object.keys(checklistData)[0];
-      const phase = checklistData[mainKey][phaseKey];
+    function calculateCategoryProgress(categoryIndex, phaseIndex) {
+      const { subcategories } = getPhaseData(categoryIndex, phaseIndex);
+      if (!subcategories) return 0;
+      
       let total = 0;
       let completed = 0;
 
-      for (const subSectionKey in phase) {
-        const subSection = phase[subSectionKey];
-        if (subSection.tasks) {
-          subSection.tasks.forEach((task, taskIndex) => {
-            const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+      function countTasksInArray(arr) {
+        if (!Array.isArray(arr)) return;
+        
+        arr.forEach((item) => {
+          if (isTaskObject(item)) {
             total++;
-            if (isTaskCompleted(taskId)) completed++;
-
-            if (task.subtasks) {
-              task.subtasks.forEach((subtask, subtaskIndex) => {
-                const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+            if (item.completed === true) completed++;
+            
+            // Check for nested tasks
+            Object.values(item).forEach(value => {
+              if (Array.isArray(value)) {
+                value.forEach((subItem) => {
+                  if (isTaskObject(subItem)) {
                 total++;
-                if (isTaskCompleted(subtaskId)) completed++;
+                    if (subItem.completed === true) completed++;
+                  }
               });
             }
           });
-        }
+          } else if (typeof item === 'object' && item !== null) {
+            // Nested container - recursively process
+            Object.values(item).forEach(value => {
+              if (Array.isArray(value)) {
+                countTasksInArray(value);
+              }
+            });
+          }
+        });
       }
+
+      subcategories.forEach((subcategoryObj, subcategoryIndex) => {
+        const subcategoryName = Object.keys(subcategoryObj)[0];
+        const subcategory = subcategoryObj[subcategoryName];
+        if (Array.isArray(subcategory)) {
+          countTasksInArray(subcategory, subcategoryIndex);
+        }
+      });
 
       return total > 0 ? Math.round((completed / total) * 100) : 0;
     }
 
-    // Update category progress
-    function updateCategoryProgress(phaseKey = null) {
-      const mainKey = Object.keys(checklistData)[0];
-      const phases = checklistData[mainKey];
+    // Update category progress (new array format)
+    function updateCategoryProgress(categoryIndex = null, phaseIndex = null) {
+      const checklistData = stateManager.get('checklistData');
+      if (!checklistData || !Array.isArray(checklistData)) return;
+      
+      const categoryIdx = categoryIndex !== null ? categoryIndex : 0;
+      const { phases } = getCategoryData(categoryIdx);
+      if (!phases) return;
 
-      if (phaseKey) {
-        // Update specific category
-        const categoryDiv = document.querySelector(`[data-category-id="${phaseKey}"]`);
+      if (phaseIndex !== null) {
+        // Update specific phase
+        const categoryDiv = document.querySelector(`[data-category-index="${categoryIdx}"][data-phase-index="${phaseIndex}"]`);
         if (categoryDiv) {
-          const progress = calculateCategoryProgress(phaseKey);
+          const progress = calculateCategoryProgress(categoryIdx, phaseIndex);
           const progressText = categoryDiv.querySelector('.category-progress-text');
           const progressBar = categoryDiv.querySelector('.category-progress-bar');
           if (progressText) progressText.textContent = `${progress}% Complete`;
           if (progressBar) progressBar.style.width = `${progress}%`;
         }
       } else {
-        // Update all categories
-        for (const key in phases) {
-          updateCategoryProgress(key);
-        }
+        // Update all phases
+        phases.forEach((phaseObj, idx) => {
+          updateCategoryProgress(categoryIdx, idx);
+        });
       }
     }
 
-    // Update overall progress
+    // Update overall progress (new array format)
     function updateOverallProgress() {
-      const mainKey = Object.keys(checklistData)[0];
-      const phases = checklistData[mainKey];
+      const checklistData = stateManager.get('checklistData');
+      if (!checklistData || !Array.isArray(checklistData)) return;
+      
       let total = 0;
       let completed = 0;
 
-      for (const phaseKey in phases) {
-        const phase = phases[phaseKey];
-        for (const subSectionKey in phase) {
-          const subSection = phase[subSectionKey];
-          if (subSection.tasks) {
-            subSection.tasks.forEach((task, taskIndex) => {
-              const taskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex);
+      checklistData.forEach((categoryObj, categoryIndex) => {
+        const categoryName = Object.keys(categoryObj)[0];
+        const phases = categoryObj[categoryName];
+        if (!Array.isArray(phases)) return;
+        
+        phases.forEach((phaseObj, phaseIndex) => {
+          const phaseName = Object.keys(phaseObj)[0];
+          const subcategories = phaseObj[phaseName];
+          if (!Array.isArray(subcategories)) return;
+          
+          subcategories.forEach((subcategoryObj) => {
+            const subcategoryName = Object.keys(subcategoryObj)[0];
+            const subcategory = subcategoryObj[subcategoryName];
+            if (Array.isArray(subcategory)) {
+              subcategory.forEach((item) => {
+                if (isTaskObject(item)) {
               total++;
-              if (isTaskCompleted(taskId)) completed++;
-
-              if (task.subtasks) {
-                task.subtasks.forEach((subtask, subtaskIndex) => {
-                  const subtaskId = getTaskId(mainKey, phaseKey, subSectionKey, taskIndex, subtaskIndex);
+                  if (item.completed === true) completed++;
+                  
+                  // Check for nested tasks
+                  Object.values(item).forEach(value => {
+                    if (Array.isArray(value)) {
+                      value.forEach((subItem) => {
+                        if (isTaskObject(subItem)) {
                   total++;
-                  if (isTaskCompleted(subtaskId)) completed++;
+                          if (subItem.completed === true) completed++;
+                        }
                 });
               }
             });
-          }
-        }
-      }
+                } else if (typeof item === 'object' && item !== null) {
+                  // Nested container - recursively process
+                  Object.values(item).forEach(value => {
+                    if (Array.isArray(value)) {
+                      value.forEach((nestedItem) => {
+                        if (isTaskObject(nestedItem)) {
+                          total++;
+                          if (nestedItem.completed === true) completed++;
+                        }
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          });
+        });
+      });
 
       const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
       document.getElementById('overall-progress-percent').textContent = `${percent}%`;
@@ -1996,54 +3635,67 @@
       document.getElementById('overall-progress-bar').style.width = `${percent}%`;
     }
 
-    // Handle signup button click - open Google Form
+    // Legacy handleSignup - now opens auth modal
     function handleSignup() {
-      console.log('Signup button clicked - opening Google Form');
-      window.open('https://forms.gle/zCZ1LTBNgAjFC3zx6', '_blank');
+      openAuthModal();
     }
 
-    // Add new phase
-    function addNewPhase(mainKey) {
-      const newPhaseKey = `New Phase ${Object.keys(checklistData[mainKey]).length + 1}`;
-      checklistData[mainKey][newPhaseKey] = {};
+    // Add new phase (new array format)
+    function addNewPhase(categoryIndex) {
+      const { phases } = getCategoryData(categoryIndex);
+      if (!phases) return;
+      
+      const newPhaseName = `New Phase ${phases.length + 1}`;
+      phases.push({
+        [newPhaseName]: []
+      });
+      
       saveProgress();
       renderChecklist();
     }
 
-    // Add new category/sub-section
-    function addNewCategory(mainKey, phaseKey, contentDiv) {
-      const phase = checklistData[mainKey][phaseKey];
-      const categoryCount = Object.keys(phase).length;
-      const newCategoryKey = `New Category ${categoryCount + 1}`;
-      phase[newCategoryKey] = { tasks: [] };
+    // Add new category/sub-section (new array format)
+    function addNewCategory(categoryIndex, phaseIndex, contentDiv) {
+      const { subcategories } = getPhaseData(categoryIndex, phaseIndex);
+      if (!subcategories) return;
+      
+      const newCategoryName = `New Category ${subcategories.length + 1}`;
+      subcategories.push({
+        [newCategoryName]: []
+      });
+      
       saveProgress();
       
       // Re-render just this phase's content
-      const categoryDiv = contentDiv.closest('[data-category-id]');
+      const categoryDiv = contentDiv.closest(`[data-category-index="${categoryIndex}"][data-phase-index="${phaseIndex}"]`);
       const oldContent = categoryDiv.querySelector('.category-content');
       const newContent = document.createElement('div');
       newContent.className = 'category-content space-y-6';
       newContent.style.display = oldContent.style.display;
       
-      for (const subSectionKey in phase) {
-        const subSection = phase[subSectionKey];
-        const subSectionElement = createSubSectionElement(subSectionKey, subSection, mainKey, phaseKey);
+      // Re-render all subcategories
+      subcategories.forEach((subcategoryObj, subcategoryIndex) => {
+        const subcategoryName = Object.keys(subcategoryObj)[0];
+        const subcategory = subcategoryObj[subcategoryName];
+        if (Array.isArray(subcategory)) {
+          const subSectionElement = createSubSectionElement(subcategoryName, subcategory, categoryIndex, phaseIndex, subcategoryIndex);
         newContent.appendChild(subSectionElement);
       }
+      });
       
       // Add "+ Category" button
       const addCategoryButton = document.createElement('button');
       addCategoryButton.className = 'add-button w-full';
       addCategoryButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Category</span>';
-      addCategoryButton.onclick = () => addNewCategory(mainKey, phaseKey, newContent);
+      addCategoryButton.onclick = () => addNewCategory(categoryIndex, phaseIndex, newContent);
       newContent.appendChild(addCategoryButton);
       
       oldContent.replaceWith(newContent);
-      updateCategoryProgress(phaseKey);
+      updateCategoryProgress(categoryIndex, phaseIndex);
     }
 
-    // Show dialog to add new task
-    function showAddTaskDialog(mainKey, phaseKey, subSectionKey, tasksContainer, subSectionDiv) {
+    // Show dialog to add new task (new array format)
+    function showAddTaskDialog(categoryIndex, phaseIndex, subcategoryIndex, tasksContainer, subSectionDiv) {
       const overlay = document.createElement('div');
       overlay.className = 'dialog-overlay';
       overlay.onclick = (e) => {
@@ -2097,7 +3749,7 @@
         
         if (taskName) {
           try {
-            addNewTask(mainKey, phaseKey, subSectionKey, taskName, taskDescription, tasksContainer, subSectionDiv);
+            addNewTask(categoryIndex, phaseIndex, subcategoryIndex, taskName, taskDescription, tasksContainer, subSectionDiv);
             overlay.remove();
           } catch (error) {
             console.error('Error adding task:', error);
@@ -2111,44 +3763,23 @@
       dialog.querySelector('#task-name').focus();
     }
 
-    // Add new task
-    function addNewTask(mainKey, phaseKey, subSectionKey, taskName, taskDescription, tasksContainer, subSectionDiv) {
-      // Validate inputs
-      if (!checklistData || !checklistData[mainKey]) {
-        console.error('Invalid mainKey:', mainKey);
-        throw new Error('Invalid checklist data structure');
-      }
-      
-      // Ensure phase exists
-      if (!checklistData[mainKey][phaseKey]) {
-        console.log('Creating missing phase:', phaseKey);
-        checklistData[mainKey][phaseKey] = {};
-      }
-      
-      // Ensure sub-section exists
-      if (!checklistData[mainKey][phaseKey][subSectionKey]) {
-        console.log('Creating missing sub-section:', subSectionKey);
-        checklistData[mainKey][phaseKey][subSectionKey] = { tasks: [] };
-      }
-      
-      const subSection = checklistData[mainKey][phaseKey][subSectionKey];
-      if (!subSection) {
-        console.error('Sub-section is null:', subSectionKey);
-        throw new Error('Sub-section does not exist');
-      }
-      
-      if (!subSection.tasks) {
-        subSection.tasks = [];
+    // Add new task (new array format)
+    function addNewTask(categoryIndex, phaseIndex, subcategoryIndex, taskName, taskDescription, tasksContainer, subSectionDiv) {
+      const { items } = getSubcategoryData(categoryIndex, phaseIndex, subcategoryIndex);
+      if (!items || !Array.isArray(items)) {
+        throw new Error('Invalid subcategory data structure');
       }
       
       const newTask = {
         name: taskName,
         description: taskDescription || '',
-        links: []
+        links: [],
+        completed: false
       };
       
-      subSection.tasks.push(newTask);
-      const taskIndex = subSection.tasks.length - 1;
+      // Add task to the items array
+      items.push(newTask);
+      const taskIndex = items.filter(item => isTaskObject(item)).length - 1;
       
       // Remove the "+ Task" button temporarily
       const addButton = tasksContainer.querySelector('.add-button');
@@ -2157,23 +3788,37 @@
       }
       
       // Add the new task row
-      const taskRow = createTaskRow(newTask, mainKey, phaseKey, subSectionKey, taskIndex);
+      const taskRow = createTaskRow(newTask, categoryIndex, phaseIndex, subcategoryIndex, taskIndex);
       tasksContainer.appendChild(taskRow);
       
       // Re-add the "+ Task" button
       const newAddButton = document.createElement('button');
       newAddButton.className = 'add-button w-full';
       newAddButton.innerHTML = '<span class="material-symbols-outlined">add</span><span>New Task</span>';
-      newAddButton.onclick = () => showAddTaskDialog(mainKey, phaseKey, subSectionKey, tasksContainer, subSectionDiv);
+      newAddButton.onclick = () => showAddTaskDialog(categoryIndex, phaseIndex, subcategoryIndex, tasksContainer, subSectionDiv);
       tasksContainer.appendChild(newAddButton);
       
       saveProgress();
       updateOverallProgress();
-      updateCategoryProgress(phaseKey);
+      updateCategoryProgress(categoryIndex, phaseIndex);
+      
+      // Update subcategory checkbox state
+      const subcategoryCheckbox = subSectionDiv.querySelector('input[type="checkbox"]');
+      if (subcategoryCheckbox) {
+        updateSubcategoryCheckboxState(categoryIndex, phaseIndex, subcategoryIndex, subcategoryCheckbox);
+      }
     }
 
-    // Show dialog to add new resource
-    function showAddResourceDialog(mainKey, phaseKey, subSectionKey, taskIndex) {
+    // Show dialog to add new resource (supports both old and new structure)
+    function showAddResourceDialog(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex) {
+      // Determine if using new structure (numeric indices) or old structure (string keys)
+      const isNewStructure = typeof categoryIndexOrMainKey === 'number';
+      const categoryIndex = isNewStructure ? categoryIndexOrMainKey : 0;
+      const phaseIndex = isNewStructure ? phaseIndexOrPhaseKey : 0;
+      const subcategoryIndex = isNewStructure ? subcategoryIndexOrSubSectionKey : 0;
+      const mainKey = isNewStructure ? null : categoryIndexOrMainKey;
+      const phaseKey = isNewStructure ? null : phaseIndexOrPhaseKey;
+      const subSectionKey = isNewStructure ? null : subcategoryIndexOrSubSectionKey;
       const overlay = document.createElement('div');
       overlay.className = 'dialog-overlay';
       overlay.onclick = (e) => {
@@ -2238,13 +3883,19 @@
         
         if (title && url) {
           try {
-            addNewResource(mainKey, phaseKey, subSectionKey, taskIndex, title, url, image, tags);
+            addNewResource(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex, title, url, image, tags);
             overlay.remove();
-            // Refresh the links display
-            const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
-            const taskRow = document.querySelector(`[data-task-id="${getTaskId(mainKey, phaseKey, subSectionKey, taskIndex)}"]`)?.closest('.swipe-content');
+            // Refresh the links display - use currentTaskInfo if available
+            if (currentTaskInfo) {
+              const task = isNewStructure 
+                ? getTaskObject(categoryIndex, phaseIndex, subcategoryIndex, taskIndex)
+                : (checklistData[mainKey] && checklistData[mainKey][phaseKey] && checklistData[mainKey][phaseKey][subSectionKey] && checklistData[mainKey][phaseKey][subSectionKey].tasks ? checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex] : null);
+              if (task) {
+                const taskRow = document.querySelector(`[data-task-name="${task.name}"]`)?.closest('.swipe-content');
             if (taskRow) {
               showTaskLinks(task.links, task.name, taskRow);
+                }
+              }
             }
           } catch (error) {
             console.error('Error adding resource:', error);
@@ -2258,9 +3909,27 @@
       dialog.querySelector('#resource-title').focus();
     }
 
-    // Add new resource to task
-    function addNewResource(mainKey, phaseKey, subSectionKey, taskIndex, title, url, image, tags) {
-      const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+    // Add new resource to task (supports both old and new structure)
+    function addNewResource(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex, title, url, image, tags) {
+      // Determine if using new structure (numeric indices) or old structure (string keys)
+      const isNewStructure = typeof categoryIndexOrMainKey === 'number';
+      let task;
+      
+      if (isNewStructure) {
+        task = getTaskObject(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex);
+      } else {
+        // Old structure
+        if (checklistData[categoryIndexOrMainKey] && checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey] && 
+            checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey][subcategoryIndexOrSubSectionKey] &&
+            checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey][subcategoryIndexOrSubSectionKey].tasks) {
+          task = checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey][subcategoryIndexOrSubSectionKey].tasks[taskIndex];
+        }
+      }
+      
+      if (!task) {
+        throw new Error('Task not found');
+      }
+      
       if (!task.links) {
         task.links = [];
       }
@@ -2276,8 +3945,16 @@
       saveProgress();
     }
 
-    // Show dialog to edit existing resource
-    function showEditResourceDialog(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, resource, swipeContainer) {
+    // Show dialog to edit existing resource (supports both old and new structure)
+    function showEditResourceDialog(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex, linkIndex, resource, swipeContainer) {
+      // Determine if using new structure (numeric indices) or old structure (string keys)
+      const isNewStructure = typeof categoryIndexOrMainKey === 'number';
+      const categoryIndex = isNewStructure ? categoryIndexOrMainKey : 0;
+      const phaseIndex = isNewStructure ? phaseIndexOrPhaseKey : 0;
+      const subcategoryIndex = isNewStructure ? subcategoryIndexOrSubSectionKey : 0;
+      const mainKey = isNewStructure ? null : categoryIndexOrMainKey;
+      const phaseKey = isNewStructure ? null : phaseIndexOrPhaseKey;
+      const subSectionKey = isNewStructure ? null : subcategoryIndexOrSubSectionKey;
       const overlay = document.createElement('div');
       overlay.className = 'dialog-overlay';
       overlay.onclick = (e) => {
@@ -2349,13 +4026,19 @@
         
         if (title && url) {
           try {
-            updateResource(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, title, url, image, tags);
+            updateResource(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex, linkIndex, title, url, image, tags);
             overlay.remove();
-            // Refresh the links display
-            const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
-            const taskRow = document.querySelector(`[data-task-id="${getTaskId(mainKey, phaseKey, subSectionKey, taskIndex)}"]`)?.closest('.swipe-content');
+            // Refresh the links display - use currentTaskInfo if available
+            if (currentTaskInfo) {
+              const task = isNewStructure 
+                ? getTaskObject(categoryIndex, phaseIndex, subcategoryIndex, taskIndex)
+                : (checklistData[mainKey] && checklistData[mainKey][phaseKey] && checklistData[mainKey][phaseKey][subSectionKey] && checklistData[mainKey][phaseKey][subSectionKey].tasks ? checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex] : null);
+              if (task) {
+                const taskRow = document.querySelector(`[data-task-name="${task.name}"]`)?.closest('.swipe-content');
             if (taskRow) {
               showTaskLinks(task.links, task.name, taskRow);
+                }
+              }
             }
           } catch (error) {
             console.error('Error updating resource:', error);
@@ -2369,9 +4052,27 @@
       dialog.querySelector('#edit-resource-title').focus();
     }
 
-    // Update existing resource
-    function updateResource(mainKey, phaseKey, subSectionKey, taskIndex, linkIndex, title, url, image, tags) {
-      const task = checklistData[mainKey][phaseKey][subSectionKey].tasks[taskIndex];
+    // Update existing resource (supports both old and new structure)
+    function updateResource(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex, linkIndex, title, url, image, tags) {
+      // Determine if using new structure (numeric indices) or old structure (string keys)
+      const isNewStructure = typeof categoryIndexOrMainKey === 'number';
+      let task;
+      
+      if (isNewStructure) {
+        task = getTaskObject(categoryIndexOrMainKey, phaseIndexOrPhaseKey, subcategoryIndexOrSubSectionKey, taskIndex);
+      } else {
+        // Old structure
+        if (checklistData[categoryIndexOrMainKey] && checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey] && 
+            checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey][subcategoryIndexOrSubSectionKey] &&
+            checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey][subcategoryIndexOrSubSectionKey].tasks) {
+          task = checklistData[categoryIndexOrMainKey][phaseIndexOrPhaseKey][subcategoryIndexOrSubSectionKey].tasks[taskIndex];
+        }
+      }
+      
+      if (!task) {
+        throw new Error('Task not found');
+      }
+      
       if (task.links && task.links[linkIndex]) {
         // Handle both old format (string) and new format (object)
         if (typeof task.links[linkIndex] === 'string') {
@@ -2416,23 +4117,17 @@
       addSwipeHandlers(progressContent, progressContainer);
     }
 
-    // Wire up signup button
+    // Wire up signup button (now auth button)
     function wireUpSignupButton() {
-      // Find signup button by text content or by being in header
-      const signupButton = Array.from(document.querySelectorAll('a')).find(a => 
-        a.textContent.trim() === 'Signup' && a.closest('header')
-      );
-      if (signupButton) {
-        console.log('Signup button found, handler function:', typeof handleSignup);
-        // Remove existing onclick to avoid double-firing, then add event listener
-        signupButton.removeAttribute('onclick');
-        signupButton.addEventListener('click', function(e) {
-          console.log('Signup button clicked via event listener');
-          e.preventDefault();
-          handleSignup();
-        });
+      // The auth button is already set up with onclick="openAuthModal()" in the HTML
+      // and is updated by updateAuthButton() based on auth state
+      // This function is kept for compatibility but doesn't need to do anything
+      const authButton = document.getElementById('auth-button');
+      if (authButton) {
+        // Button is already properly configured in HTML
+        // updateAuthButton() will handle dynamic updates based on auth state
       } else {
-        console.warn('Signup button not found!');
+        console.warn('Auth button not found!');
       }
     }
 
@@ -2478,6 +4173,34 @@
       swipeCloseHandlerAdded = true;
     }
     
+    // Utility function to clear all user data (for testing)
+    // Call this from browser console: clearAllUserData()
+    window.clearAllUserData = function() {
+      // Clear all cookies
+      document.cookie.split(";").forEach(function(c) { 
+        const cookieName = c.replace(/^ +/, "").split("=")[0];
+        document.cookie = cookieName + "=;expires=" + new Date(0).toUTCString() + ";path=/";
+      });
+      
+      // Clear localStorage items
+      localStorage.removeItem('move2japan_anonymous_user_id');
+      localStorage.removeItem('move2japan_auth_token');
+      localStorage.removeItem('move2japan_user_info');
+      localStorage.removeItem('move2japan_email_gate_suppressed');
+      
+      // Clear in-memory state
+      authToken = null;
+      currentUser = null;
+      stateManager.setState({ checklistData: null, authToken: null, currentUser: null });
+      
+      console.log('✅ All user data cleared! Reloading page...');
+      
+      // Reload the page to reset everything
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    };
+    
     // Initialize on page load
     init();
     
@@ -2486,11 +4209,13 @@
       document.addEventListener('DOMContentLoaded', () => {
         wireUpSignupButton();
         wireUpDrawer();
+        initEmailModal();
       });
     } else {
       // DOM already loaded
       wireUpSignupButton();
       wireUpDrawer();
+      initEmailModal();
     }
   </script>
 
@@ -2504,6 +4229,11 @@
       var s = d.createElement('script');s.async = true;s.src = 'https://static.userback.io/widget/v1.js';(d.head || d.body).appendChild(s);
     })(document);
   </script>
+
+  <!-- MailerLite Scripts -->
+  <script src="https://groot.mailerlite.com/js/w/webforms.min.js?v176e10baa5e7ed80d35ae235be3d5024" type="text/javascript"></script>
+  <script>
+    fetch("https://assets.mailerlite.com/jsonp/1923093/forms/171195070484055534/takel")
+  </script>
 </body>
 </html>
-

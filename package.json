@@ -1,0 +1,12 @@
+{
+  "name": "move2japan-static-site",
+  "version": "1.0.0",
+  "description": "Move2Japan static site with environment-based configuration",
+  "scripts": {
+    "build": "node generate-config.js"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
+
