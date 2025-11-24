@@ -486,7 +486,6 @@
     .auth-form {
       display: block;
     }
-    }
     .email-modal-subtitle {
       font-size: 0.875rem;
       color: #64748b;
@@ -900,6 +899,11 @@
             <div style="margin-bottom: 16px;">
               <input type="password" id="login-password" class="email-input" placeholder="Password" autocomplete="current-password" required>
             </div>
+            <div style="margin-bottom: 8px; text-align: right;">
+              <a href="javascript:void(0)" onclick="handlePasswordResetRequest(document.getElementById('login-email').value || '')" style="color: #0ea5e9; font-size: 14px; text-decoration: underline;">
+                Forgot password?
+              </a>
+            </div>
             <div style="margin-bottom: 16px;">
               <button type="submit" class="primary" style="width: 100%; padding: 12px; background: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
                 Log In
@@ -926,7 +930,7 @@
         <div class="flex justify-between items-start pt-6">
           <div class="text-white font-bold text-xl">🇯🇵</div>
           <div id="auth-button-container">
-            <a id="auth-button" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="javascript:void(0)" onclick="openAuthModal()">Sign Up / Log In</a>
+            <a id="auth-button" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="javascript:void(0)" onclick="openAuthModal()">Save / Load</a>
           </div>
         </div>
         <div class="flex flex-col items-center justify-center h-full text-center text-white pb-16">
@@ -1003,6 +1007,8 @@
     
     // Anonymous user ID storage (using localStorage to persist across sessions)
     const ANONYMOUS_USER_ID_KEY = 'move2japan_anonymous_user_id';
+    // Flag to suppress email gate without associating with a user ID
+    const EMAIL_GATE_SUPPRESSED_KEY = 'move2japan_email_gate_suppressed';
     
     // Initialize auth state
     function initAuthState() {
@@ -1028,7 +1034,7 @@
           authButton.textContent = `${currentUser.email} (Logout)`;
           authButton.onclick = handleLogout;
         } else {
-          authButton.textContent = 'Sign Up / Log In';
+          authButton.textContent = 'Save / Load';
           authButton.onclick = openAuthModal;
         }
       }
@@ -1115,6 +1121,18 @@
       const signupForm = document.getElementById('auth-form-signup');
       const loginForm = document.getElementById('auth-form-login');
       
+      // Clear any error messages when switching tabs
+      const signupError = document.getElementById('signup-error');
+      const loginError = document.getElementById('login-error');
+      if (signupError) {
+        signupError.style.display = 'none';
+        signupError.textContent = '';
+      }
+      if (loginError) {
+        loginError.style.display = 'none';
+        loginError.textContent = '';
+      }
+      
       if (tab === 'signup') {
         signupTab.classList.add('active');
         loginTab.classList.remove('active');
@@ -1125,6 +1143,39 @@
         signupTab.classList.remove('active');
         loginForm.style.display = 'block';
         signupForm.style.display = 'none';
+      }
+    }
+    
+    // Handle password reset request
+    async function handlePasswordResetRequest(email) {
+      // If no email provided, prompt for it
+      if (!email || email.trim() === '') {
+        email = prompt('Please enter your email address to reset your password:');
+        if (!email || email.trim() === '') {
+          return;
+        }
+      }
+      
+      try {
+        const response = await fetch(`${BACKEND_API_URL}/api/auth/password-reset`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: email.trim() })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert('Password reset email sent! Please check your inbox for instructions to reset your password.');
+        } else {
+          // Even if email doesn't exist, we show success message for security (don't reveal if email exists)
+          alert('If an account exists with that email, a password reset link has been sent. Please check your inbox.');
+        }
+      } catch (error) {
+        console.error('Password reset error:', error);
+        alert('An error occurred. Please try again later.');
       }
     }
     
@@ -1139,17 +1190,13 @@
       
       try {
         const anonymousUserId = getAnonymousUserId();
-        
-        // Get local data before signup to migrate it
         const localData = getCookie(COOKIE_NAME);
         const localChecklistData = localData?.checklistData || checklistData;
         const localCompletedTasks = localData?.completedTasks || Array.from(completedTasks);
         
         const response = await fetch(`${BACKEND_API_URL}/api/auth/signup`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email,
             password,
@@ -1159,8 +1206,16 @@
         
         const data = await response.json();
         
-        if (response.ok) {
-          // Save auth token and user info
+        // Check status code - only 200/201 is success
+        if (response.status === 200 || response.status === 201) {
+          // Validate response data
+          if (!data.user?.id || !data.user?.email) {
+            errorDiv.textContent = 'Signup failed: Invalid response from server.';
+            errorDiv.style.display = 'block';
+            return;
+          }
+          
+          // Save auth state
           authToken = data.access_token;
           currentUser = data.user;
           localStorage.setItem(AUTH_TOKEN_KEY, authToken);
@@ -1169,18 +1224,33 @@
           updateAuthButton();
           closeAuthModal();
           
-          // Migrate local data to Supabase
+          // Migrate or load data
           if (localChecklistData && Object.keys(localChecklistData).length > 0) {
             await saveUserSiteData(localChecklistData, localCompletedTasks);
-            console.log('Migrated local data to Supabase');
           } else {
-            // Load user's saved data from Supabase (if any)
             await loadUserSiteData();
           }
           
           alert('Account created successfully! Your local progress has been saved to the cloud.');
         } else {
-          errorDiv.textContent = data.detail || 'Signup failed. Please try again.';
+          // Handle error response
+          const errorMessage = data.detail || 'Signup failed. Please try again.';
+          const isDuplicate = response.status === 400 && (
+            errorMessage.toLowerCase().includes('already') || 
+            errorMessage.toLowerCase().includes('exists')
+          );
+          
+          if (isDuplicate) {
+            errorDiv.innerHTML = `
+              <div style="margin-bottom: 8px;">${errorMessage}</div>
+              <div style="font-size: 13px; margin-top: 8px;">
+                <a href="javascript:void(0)" onclick="switchAuthTab('login')" style="color: #0ea5e9; text-decoration: underline; margin-right: 12px;">Log in instead</a>
+                <a href="javascript:void(0)" onclick="handlePasswordResetRequest('${email}')" style="color: #0ea5e9; text-decoration: underline;">Reset password</a>
+              </div>
+            `;
+          } else {
+            errorDiv.textContent = errorMessage;
+          }
           errorDiv.style.display = 'block';
         }
       } catch (error) {
@@ -1274,42 +1344,87 @@
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(USER_INFO_KEY);
       
+      // Clear anonymous user ID to prevent cross-user association
+      // This ensures a new user on the same browser won't be linked to the previous user's anonymous ID
+      localStorage.removeItem(ANONYMOUS_USER_ID_KEY);
+      
+      // Set flag to suppress email gate (but don't associate with a user ID)
+      // This prevents the email gate from showing without creating a privacy issue
+      localStorage.setItem(EMAIL_GATE_SUPPRESSED_KEY, 'true');
+      
       updateAuthButton();
       
-      // Reload page data from cookie
-      const savedData = getCookie(COOKIE_NAME);
-      if (savedData && savedData.checklistData) {
-        checklistData = savedData.checklistData;
-        completedTasks = new Set(savedData.completedTasks || []);
+      // Reset content to initial state
+      // Clear the cookie by setting it to expire in the past
+      const expires = new Date();
+      expires.setTime(expires.getTime() - 1);
+      document.cookie = `${COOKIE_NAME}=;expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+      
+      // Reset completed tasks
+      completedTasks = new Set();
+      
+      // Reload checklist from initial URL
+      checklistData = await loadInitialChecklist();
+      
+      if (checklistData) {
+        // Save fresh state to cookie
+        setCookie(COOKIE_NAME, {
+          checklistData: checklistData,
+          completedTasks: []
+        }, COOKIE_EXPIRY_DAYS);
+        
         renderChecklist();
         updateOverallProgress();
+      } else {
+        // If loading fails, show error message
+        document.getElementById('checklist-container').innerHTML = 
+          '<div class="text-center text-red-600">Failed to load checklist. Please refresh the page.</div>';
       }
     }
     
     // Save user's site data to backend
     async function saveUserSiteData(checklistDataToSave, completedTasksArray) {
       if (!authToken || !currentUser) {
+        console.warn('Cannot save: user not authenticated');
         return false;
       }
       
       try {
+        const payload = {
+          checklist_data: checklistDataToSave,
+          completed_tasks: completedTasksArray
+        };
+        
+        console.log('Saving to backend:', {
+          checklistDataKeys: Object.keys(checklistDataToSave || {}),
+          completedTasksCount: completedTasksArray.length,
+          userId: currentUser.id
+        });
+        
         const response = await fetch(`${BACKEND_API_URL}/api/site-data`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            checklist_data: checklistDataToSave,
-            completed_tasks: completedTasksArray
-          })
+          body: JSON.stringify(payload)
         });
         
         if (response.ok) {
-          console.log('Saved user site data to backend');
+          const result = await response.json();
+          console.log('Successfully saved user site data to backend:', {
+            savedChecklistKeys: Object.keys(result.checklist_data || {}),
+            savedTasksCount: (result.completed_tasks || []).length,
+            updatedAt: result.updated_at
+          });
           return true;
         } else {
-          console.warn('Failed to save user site data to backend:', response.status);
+          const errorText = await response.text();
+          console.error('Failed to save user site data to backend:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText
+          });
           return false;
         }
       } catch (error) {
@@ -1321,10 +1436,12 @@
     // Load user's saved site data from backend
     async function loadUserSiteData() {
       if (!authToken || !currentUser) {
+        console.log('Cannot load: user not authenticated');
         return null;
       }
       
       try {
+        console.log('Loading user site data from backend for user:', currentUser.id);
         const response = await fetch(`${BACKEND_API_URL}/api/site-data`, {
           method: 'GET',
           headers: {
@@ -1335,16 +1452,42 @@
         
         if (response.ok) {
           const data = await response.json();
+          console.log('Backend response received:', {
+            hasChecklistData: !!data.checklist_data,
+            checklistDataKeys: data.checklist_data ? Object.keys(data.checklist_data) : [],
+            checklistDataLength: data.checklist_data ? Object.keys(data.checklist_data).length : 0,
+            completedTasksCount: data.completed_tasks ? data.completed_tasks.length : 0,
+            updatedAt: data.updated_at
+          });
+          
+          // Always load completed_tasks if they exist, even if checklist_data is empty
+          if (data.completed_tasks && Array.isArray(data.completed_tasks) && data.completed_tasks.length > 0) {
+            completedTasks = new Set(data.completed_tasks);
+            console.log('Loaded', data.completed_tasks.length, 'completed tasks from backend');
+          }
+          
+          // Check if we have valid checklist data
           if (data.checklist_data && Object.keys(data.checklist_data).length > 0) {
             checklistData = data.checklist_data;
-            completedTasks = new Set(data.completed_tasks || []);
             renderChecklist();
             updateOverallProgress();
-            console.log('Loaded user site data from backend');
+            console.log('Successfully loaded and rendered user site data from backend');
+            return data;
+          } else {
+            console.log('No checklist data found in backend response (empty or missing)');
+            // Still return the data structure even if empty, so caller knows the request succeeded
+            // The completed_tasks have already been loaded above if they existed
             return data;
           }
+        } else {
+          const errorText = await response.text();
+          console.error('Failed to load user site data from backend:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText
+          });
+          return null;
         }
-        return null;
       } catch (error) {
         console.error('Error loading user site data:', error);
         return null;
@@ -1365,10 +1508,13 @@
       });
     }
     
-    // Show email modal if anonymous user ID not found
+    // Show email modal if anonymous user ID not found and email gate hasn't been suppressed
     function checkAndShowEmailModal() {
       const anonymousUserId = getAnonymousUserId();
-      if (!anonymousUserId) {
+      const emailGateSuppressed = localStorage.getItem(EMAIL_GATE_SUPPRESSED_KEY);
+      
+      // Only show if no anonymous user ID AND email gate hasn't been suppressed
+      if (!anonymousUserId && !emailGateSuppressed) {
         const modal = document.getElementById('email-modal');
         if (modal) {
           modal.style.display = 'flex';
@@ -1387,9 +1533,10 @@
     function initEmailModal() {
       // Check if we should show the email modal FIRST (before creating anonymous user ID)
       const anonymousUserId = getAnonymousUserId();
+      const emailGateSuppressed = localStorage.getItem(EMAIL_GATE_SUPPRESSED_KEY);
       
-      // If no anonymous user ID exists, show the email modal
-      if (!anonymousUserId) {
+      // If no anonymous user ID exists AND email gate hasn't been suppressed, show the email modal
+      if (!anonymousUserId && !emailGateSuppressed) {
         checkAndShowEmailModal();
       }
       
@@ -1506,19 +1653,23 @@
       // If user is logged in, try to load their data from backend first
       if (authToken && currentUser) {
         const serverData = await loadUserSiteData();
-        // If we got data from server, use it (it's already loaded in loadUserSiteData)
+        // If we got checklist data from server, use it (it's already loaded and rendered in loadUserSiteData)
         if (serverData && serverData.checklist_data && Object.keys(serverData.checklist_data).length > 0) {
           // Data already loaded and rendered by loadUserSiteData
+          // completedTasks were also loaded in loadUserSiteData
           wireUpOverallProgressSwipe();
           return;
         }
+        // If serverData exists but has no checklist_data, completed_tasks were still loaded in loadUserSiteData
+        // We'll continue to load the default checklist and apply those completed_tasks
       }
       
       // For anonymous users or if no server data, use local cookie data
-      if (savedData && savedData.completedTasks && Array.isArray(savedData.completedTasks)) {
+      // But only if we don't already have completedTasks from server (for logged-in users)
+      if (completedTasks.size === 0 && savedData && savedData.completedTasks && Array.isArray(savedData.completedTasks)) {
         completedTasks = new Set(savedData.completedTasks);
         console.log('Restored', completedTasks.size, 'completed tasks from cookie');
-      } else {
+      } else if (completedTasks.size === 0) {
         completedTasks = new Set();
       }
       
@@ -3424,6 +3575,7 @@
       localStorage.removeItem('move2japan_anonymous_user_id');
       localStorage.removeItem('move2japan_auth_token');
       localStorage.removeItem('move2japan_user_info');
+      localStorage.removeItem('move2japan_email_gate_suppressed');
       
       // Clear in-memory state
       authToken = null;
