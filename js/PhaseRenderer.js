@@ -63,9 +63,9 @@ class PhaseRenderer {
     titleH3.setAttribute('data-category-index', categoryIndex);
     titleH3.setAttribute('data-phase-index', phaseIndex);
     
-    // Make title editable on click
+    // Make title editable on double-click (to avoid interfering with phase expand/collapse)
     if (this.callbacks.onEditPhase) {
-      titleH3.onclick = (e) => {
+      titleH3.ondblclick = (e) => {
         e.stopPropagation();
         if (!titleH3.contentEditable || titleH3.contentEditable === 'false') {
           titleH3.contentEditable = true;

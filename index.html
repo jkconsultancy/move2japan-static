@@ -1240,6 +1240,9 @@
           localStorage.setItem(AUTH_TOKEN_KEY, authToken);
           localStorage.setItem(USER_INFO_KEY, JSON.stringify(currentUser));
           
+          // Update stateManager with auth state
+          stateManager.setState({ authToken: authToken, currentUser: currentUser });
+          
           updateAuthButton();
           closeAuthModal();
           
@@ -1313,6 +1316,9 @@
           localStorage.setItem(AUTH_TOKEN_KEY, authToken);
           localStorage.setItem(USER_INFO_KEY, JSON.stringify(currentUser));
           
+          // Update stateManager with auth state
+          stateManager.setState({ authToken: authToken, currentUser: currentUser });
+          
           updateAuthButton();
           closeAuthModal();
           
@@ -1361,6 +1367,9 @@
       currentUser = null;
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(USER_INFO_KEY);
+      
+      // Update stateManager with cleared auth state
+      stateManager.setState({ authToken: null, currentUser: null });
       
       // Clear anonymous user ID to prevent cross-user association
       // This ensures a new user on the same browser won't be linked to the previous user's anonymous ID
@@ -1682,6 +1691,9 @@
         addSwipeHandlers(row, container);
       },
       onSave: () => {
+        // Update stateManager to ensure latest data is saved
+        const currentData = stateManager.get('checklistData');
+        stateManager.setState({ checklistData: currentData }); // Trigger state update
         saveProgress();
       }
     });
@@ -1705,6 +1717,9 @@
           const oldSubcategoryName = Object.keys(oldSubcategoryObj)[0];
           const subcategoryData = oldSubcategoryObj[oldSubcategoryName];
           subcategories[subcategoryIndex] = { [newTitle]: subcategoryData };
+          // Update stateManager to ensure latest data is saved
+          const currentData = stateManager.get('checklistData');
+          stateManager.setState({ checklistData: currentData }); // Trigger state update
           saveProgress();
           updateOverallProgress();
           updateCategoryProgress(categoryIndex, phaseIndex);
@@ -1737,6 +1752,9 @@
           const oldPhaseName = Object.keys(oldPhaseObj)[0];
           const phaseData = oldPhaseObj[oldPhaseName];
           phases[phaseIndex] = { [newTitle]: phaseData };
+          // Update stateManager to ensure latest data is saved
+          const currentData = stateManager.get('checklistData');
+          stateManager.setState({ checklistData: currentData }); // Trigger state update
           saveProgress();
           updateOverallProgress();
           updateCategoryProgress(categoryIndex, phaseIndex);

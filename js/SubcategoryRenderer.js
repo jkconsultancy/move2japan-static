@@ -56,19 +56,21 @@ class SubcategoryRenderer {
     const titleWrapper = document.createElement('div');
     titleWrapper.className = 'flex items-center flex-1';
     
-    // Disclosure caret for expand/collapse
+    // Disclosure caret for expand/collapse (must be clickable and visible)
     const subcategoryCaret = document.createElement('span');
     subcategoryCaret.className = 'material-symbols-outlined text-base subcategory-caret mr-2';
     subcategoryCaret.textContent = 'expand_more';
     subcategoryCaret.style.cursor = 'pointer';
+    subcategoryCaret.style.userSelect = 'none'; // Prevent text selection
     subcategoryCaret.onclick = (e) => {
       e.stopPropagation();
+      e.preventDefault();
       this.toggleSubcategory(subSectionDiv);
     };
     
     const titleText = document.createElement('span');
     titleText.textContent = subcategoryKey;
-    titleText.contentEditable = true;
+    titleText.contentEditable = false; // Will be made editable on double-click
     titleWrapper.appendChild(subcategoryCaret);
     titleWrapper.appendChild(titleText);
     subSectionTitle.appendChild(titleWrapper);
@@ -77,42 +79,43 @@ class SubcategoryRenderer {
     subcategoryHeader.appendChild(subcategoryCheckbox);
     subcategoryHeader.appendChild(subSectionTitle);
     
-    // Make title editable
+    // Make title editable (only the titleText span, not the entire title)
+    // Use double-click to avoid interfering with caret single-click
     if (this.callbacks.onEditSubcategory) {
-      subSectionTitle.onclick = (e) => {
+      titleText.ondblclick = (e) => {
         e.stopPropagation();
-        if (!subSectionTitle.classList.contains('swiped') && (!subSectionTitle.contentEditable || subSectionTitle.contentEditable === 'false')) {
-          subSectionTitle.contentEditable = true;
-          subSectionTitle.focus();
+        if (!titleText.contentEditable || titleText.contentEditable === 'false') {
+          titleText.contentEditable = true;
+          titleText.focus();
           const range = document.createRange();
-          range.selectNodeContents(subSectionTitle);
+          range.selectNodeContents(titleText);
           const selection = window.getSelection();
           selection.removeAllRanges();
           selection.addRange(range);
         }
       };
       
-      subSectionTitle.onblur = () => {
-        if (subSectionTitle.contentEditable === 'true' || subSectionTitle.contentEditable === true) {
-          subSectionTitle.contentEditable = false;
-          const newTitle = subSectionTitle.textContent.trim();
+      titleText.onblur = () => {
+        if (titleText.contentEditable === 'true' || titleText.contentEditable === true) {
+          titleText.contentEditable = false;
+          const newTitle = titleText.textContent.trim();
           if (newTitle && newTitle !== subcategoryKey) {
             this.callbacks.onEditSubcategory(categoryIndex, phaseIndex, subcategoryIndex, newTitle, subcategoryKey);
           } else if (!newTitle) {
-            subSectionTitle.textContent = subcategoryKey;
+            titleText.textContent = subcategoryKey;
           }
         }
       };
       
-      subSectionTitle.onkeydown = (e) => {
+      titleText.onkeydown = (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          subSectionTitle.blur();
+          titleText.blur();
         }
         if (e.key === 'Escape') {
-          subSectionTitle.textContent = subcategoryKey;
-          subSectionTitle.contentEditable = false;
-          subSectionTitle.blur();
+          titleText.textContent = subcategoryKey;
+          titleText.contentEditable = false;
+          titleText.blur();
         }
       };
     }
